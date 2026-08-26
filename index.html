@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Facu Apuntes</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="app">
+
+        <!-- ENCABEZADO -->
+
+        <header class="header">
+
+            <div class="header-top">
+
+                <h1>⚖️ FACU-APUNTES</h1>
+
+                <button
+                    id="btnMateria"
+                    class="btn-materia">
+                    MATERIA ▼
+                </button>
+
+            </div>
+
+            <!-- FECHA Y MATERIA -->
+
+            <div class="segunda-linea">
+
+                <div id="fecha" class="fecha"></div>
+
+                <div
+                    id="materiaSeleccionada"
+                    class="materia-seleccionada">
+                    Seleccionar
+                </div>
+
+            </div>
+
+            <!-- MENÚ DE MATERIAS -->
+
+            <div
+                id="menuMateria"
+                class="menu-materia oculto">
+            </div>
+
+        </header>
+
+
+        <!-- ÁREA DE ESCRITURA -->
+
+        <main class="contenido">
+
+            <textarea
+                id="nota"
+                placeholder="Escribí acá tus apuntes..."
+                spellcheck="true"></textarea>
+
+            <div class="informacion">
+
+                <span id="contador">
+                    0 caracteres
+                </span>
+
+                <span id="estado">
+                    Nueva captura
+                </span>
+
+            </div>
+
+        </main>
+
+
+        <!-- BOTONES -->
+
+        <div class="botones">
+
+            <button
+                id="btnNuevo"
+                class="btn btn-nuevo">
+                ＋ NUEVO
+            </button>
+
+            <button
+                id="btnGuardar"
+                class="btn btn-guardar">
+                GUARDAR
+            </button>
+
+        </div>
+
+
+        <!-- MENSAJE -->
+
+        <div
+            id="mensaje"
+            class="mensaje">
+        </div>
+
+
+        <!-- CONFIGURACIÓN -->
+
+        <div
+            id="modalConfiguracion"
+            class="modal oculto">
+
+            <div class="modal-contenido">
+
+                <div class="modal-header">
+
+                    <h2>CONFIGURACIÓN</h2>
+
+                    <button
+                        id="btnCerrarConfiguracion"
+                        class="btn-cerrar">
+                        ×
+                    </button>
+
+                </div>
+
+                <h3>Materias</h3>
+
+                <div
+                    id="listaMaterias"
+                    class="lista-materias">
+                </div>
+
+                <div class="agregar-materia">
+
+                    <input
+                        type="text"
+                        id="nuevaMateria"
+                        placeholder="Nueva materia">
+
+                    <button
+                        id="btnAgregarMateria">
+                        ＋ AGREGAR
+                    </button>
+
+                </div>
+
+                <button
+                    id="btnCerrarModal"
+                    class="btn-modal-cerrar">
+                    CERRAR
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================
+         SUPABASE
+         ========================================= -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
+    <!-- =========================================
+         CONFIGURACIÓN DE FACU-APUNTES
+         ========================================= -->
+
+    <script>
+
+        const SUPABASE_URL =
+            "https://rodaerqzebwzcawbpvps.supabase.co";
+
+        const SUPABASE_PUBLISHABLE_KEY =
+            "sb_publishable_OOZoL1bV0Ble2DgvWxbglg_I5bD1ykO";
+
+        const supabaseClient =
+            window.supabase.createClient(
+                SUPABASE_URL,
+                SUPABASE_PUBLISHABLE_KEY
+            );
+
+    </script>
+
+
+    <!-- PROGRAMA PRINCIPAL -->
+
+    <script src="script.js"></script>
+
+</body>
+</html>

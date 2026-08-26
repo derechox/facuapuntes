@@ -1,0 +1,714 @@
+/* =========================================
+   DERECHO UBA
+   ESTILOS PRINCIPALES
+   ========================================= */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+
+body {
+    font-family: Inter, Arial, sans-serif;
+
+    background: #030712;
+
+    color: #e5e7eb;
+
+    min-height: 100vh;
+
+    display: flex;
+
+    justify-content: center;
+}
+
+
+/* =========================================
+   APLICACIÓN
+   ========================================= */
+
+.app {
+    width: 100%;
+
+    max-width: 720px;
+
+    min-height: 100vh;
+
+    display: flex;
+
+    flex-direction: column;
+
+    padding: 18px;
+}
+
+
+/* =========================================
+   ENCABEZADO
+   ========================================= */
+
+.header {
+    position: relative;
+
+    padding-bottom: 15px;
+}
+
+
+.header-top {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 12px;
+}
+
+
+.header h1 {
+    font-size: 23px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.6px;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================
+   SEGUNDA LÍNEA
+   FECHA + MATERIA
+   ========================================= */
+
+.segunda-linea {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: flex-start;
+
+    margin-top: 5px;
+
+    padding: 0 2px;
+}
+
+
+.fecha {
+    color: #9ca3af;
+
+    font-size: 13px;
+
+    text-transform: capitalize;
+}
+
+
+.materia-seleccionada {
+    color: #9ca3af;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    text-align: right;
+
+    max-width: 180px;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+
+/* =========================================
+   BOTÓN MATERIA
+   ========================================= */
+
+.btn-materia {
+    min-width: 0;
+
+    width: auto;
+
+    height: auto;
+
+    padding: 2px 0;
+
+    border: none !important;
+
+    outline: none;
+
+    border-radius: 0;
+
+    background: transparent !important;
+
+    color: #9ca3af;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+
+.btn-materia:hover {
+    background: transparent !important;
+
+    color: #ffffff;
+}
+
+
+.btn-materia:active {
+    transform: none;
+}
+
+
+/* =========================================
+   MENÚ DESPLEGABLE
+   ========================================= */
+
+.menu-materia {
+    position: absolute;
+
+    top: 52px;
+
+    right: 0;
+
+    width: 210px;
+
+    background: #111827;
+
+    border: 1px solid #374151;
+
+    border-radius: 12px;
+
+    padding: 7px;
+
+    box-shadow:
+        0 15px 35px rgba(0, 0, 0, 0.45);
+
+    z-index: 50;
+}
+
+
+.menu-materia button {
+    width: 100%;
+
+    height: 42px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    background: transparent;
+
+    color: #e5e7eb;
+
+    text-align: left;
+
+    padding: 0 12px;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+
+.menu-materia button:hover {
+    background: #1f2937;
+}
+
+
+.separador {
+    height: 1px;
+
+    background: #374151;
+
+    margin: 6px 4px;
+}
+
+
+.btn-configuracion {
+    color: #9ca3af !important;
+}
+
+
+/* =========================================
+   OCULTAR
+   ========================================= */
+
+.oculto {
+    display: none !important;
+}
+
+
+/* =========================================
+   ÁREA DE ESCRITURA
+   ========================================= */
+
+.contenido {
+    flex: 1;
+
+    display: flex;
+
+    flex-direction: column;
+}
+
+
+textarea {
+    width: 100%;
+
+    flex: 1;
+
+    min-height: 62vh;
+
+    resize: none;
+
+    outline: none;
+
+    border: 1px solid #1f2937;
+
+    border-radius: 16px;
+
+    background: #111827;
+
+    color: #f9fafb;
+
+    padding: 19px;
+
+    font-family: Inter, Arial, sans-serif;
+
+    font-size: 17px;
+
+    line-height: 1.6;
+
+    box-shadow:
+        0 8px 30px rgba(0, 0, 0, 0.25);
+}
+
+
+textarea:focus {
+    border-color: #374151;
+}
+
+
+textarea::placeholder {
+    color: #6b7280;
+}
+
+
+/* =========================================
+   INFORMACIÓN
+   ========================================= */
+
+.informacion {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    padding: 9px 4px;
+
+    color: #6b7280;
+
+    font-size: 12px;
+}
+
+
+/* =========================================
+   BOTONES PRINCIPALES
+   ========================================= */
+
+.botones {
+    display: flex;
+
+    gap: 10px;
+
+    padding-top: 4px;
+}
+
+
+.btn {
+    height: 52px;
+
+    border: none;
+
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    transition:
+        transform 0.1s ease,
+        opacity 0.1s ease;
+}
+
+
+.btn:active {
+    transform: scale(0.97);
+}
+
+
+.btn-nuevo {
+    flex: 1;
+
+    background: #374151;
+
+    color: #ffffff;
+}
+
+
+.btn-guardar {
+    flex: 1;
+
+    background: #1e40af;
+
+    color: #ffffff;
+}
+
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+
+/* =========================================
+   MENSAJE
+   ========================================= */
+
+.mensaje {
+    height: 25px;
+
+    padding-top: 7px;
+
+    text-align: center;
+
+    color: #60a5fa;
+
+    font-size: 13px;
+}
+
+
+/* =========================================
+   MODAL CONFIGURACIÓN
+   ========================================= */
+
+.modal {
+    position: fixed;
+
+    inset: 0;
+
+    background: rgba(0, 0, 0, 0.7);
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    padding: 18px;
+
+    z-index: 100;
+}
+
+
+.modal-contenido {
+    width: 100%;
+
+    max-width: 450px;
+
+    max-height: 90vh;
+
+    overflow-y: auto;
+
+    background: #111827;
+
+    border: 1px solid #374151;
+
+    border-radius: 18px;
+
+    padding: 20px;
+
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+
+.modal-header {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 20px;
+}
+
+
+.modal-header h2 {
+    font-size: 18px;
+}
+
+
+.btn-cerrar {
+    width: 38px;
+
+    height: 38px;
+
+    border: none;
+
+    border-radius: 50%;
+
+    background: #374151;
+
+    color: #ffffff;
+
+    font-size: 25px;
+
+    cursor: pointer;
+}
+
+
+.modal-contenido h3 {
+    margin-bottom: 10px;
+
+    font-size: 14px;
+
+    color: #9ca3af;
+}
+
+
+/* =========================================
+   LISTA DE MATERIAS
+   ========================================= */
+
+.lista-materias {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 7px;
+
+    margin-bottom: 15px;
+}
+
+
+.materia-item {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    min-height: 45px;
+
+    padding: 0 12px;
+
+    border-radius: 9px;
+
+    background: #030712;
+
+    border: 1px solid #1f2937;
+}
+
+
+.materia-nombre {
+    font-size: 14px;
+
+    font-weight: 600;
+}
+
+
+.materia-acciones {
+    display: flex;
+
+    gap: 6px;
+}
+
+
+.materia-acciones button {
+    width: 34px;
+
+    height: 34px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    background: #1f2937;
+
+    color: #d1d5db;
+
+    cursor: pointer;
+}
+
+
+.materia-acciones button:hover {
+    background: #374151;
+}
+
+
+/* =========================================
+   AGREGAR MATERIA
+   ========================================= */
+
+.agregar-materia {
+    display: flex;
+
+    gap: 8px;
+
+    margin-top: 10px;
+}
+
+
+.agregar-materia input {
+    flex: 1;
+
+    min-width: 0;
+
+    height: 44px;
+
+    padding: 0 12px;
+
+    border: 1px solid #374151;
+
+    border-radius: 9px;
+
+    outline: none;
+
+    background: #030712;
+
+    color: #ffffff;
+
+    font-size: 14px;
+}
+
+
+.agregar-materia input:focus {
+    border-color: #4b5563;
+}
+
+
+.agregar-materia button {
+    height: 44px;
+
+    padding: 0 13px;
+
+    border: none;
+
+    border-radius: 9px;
+
+    background: #374151;
+
+    color: white;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+
+/* =========================================
+   CERRAR CONFIGURACIÓN
+   ========================================= */
+
+.btn-modal-cerrar {
+    width: 100%;
+
+    height: 48px;
+
+    margin-top: 18px;
+
+    border: none;
+
+    border-radius: 11px;
+
+    background: #1e3a8a;
+
+    color: #ffffff;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+
+/* =========================================
+   CELULAR
+   ========================================= */
+
+@media (max-width: 500px) {
+
+    .app {
+        padding: 12px;
+    }
+
+
+    .header h1 {
+        font-size: 21px;
+    }
+
+
+    .btn-materia {
+        min-width: 0;
+
+        height: auto;
+
+        padding: 2px 0;
+
+        font-size: 12px;
+    }
+
+
+    .segunda-linea {
+        margin-top: 5px;
+    }
+
+
+    .fecha {
+        font-size: 12px;
+    }
+
+
+    .materia-seleccionada {
+        font-size: 11px;
+
+        max-width: 150px;
+    }
+
+
+    textarea {
+        min-height: 66vh;
+
+        padding: 17px;
+
+        font-size: 17px;
+
+        border-radius: 15px;
+    }
+
+
+    .btn {
+        height: 54px;
+
+        font-size: 13px;
+    }
+
+
+    .menu-materia {
+        width: 200px;
+    }
+}
