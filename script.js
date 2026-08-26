@@ -1,5 +1,10 @@
 /* =========================================
-   FACU-APUNTES v0.1
+   FACU-APUNTES v0.5
+   SUPABASE + APUNTES ANTERIORES
+   + APUNTE DEL DÍA POR MATERIA
+   + VOLVER AL APUNTE ACTUAL
+   + AUTOGUARDADO
+   + EXPANSIÓN DEL ÁREA DE ESCRITURA
    ========================================= */
 
 
@@ -82,6 +87,14 @@ let fechaCreacionActual = null;
 let guardadoAutomatico = null;
 
 
+/*
+   Guarda el apunte que estaba abierto
+   antes de entrar a "Apuntes anteriores".
+*/
+
+let contextoApunteActual = null;
+
+
 /* =========================================
    INICIO
    ========================================= */
@@ -99,13 +112,14 @@ async function iniciar() {
 
     iniciarGuardadoAutomatico();
 
-    console.log("Facu Apuntes iniciado.");
+    iniciarExpansionEscritura();
 
+    console.log("Facu Apuntes iniciado.");
 }
 
 
 /* =========================================
-   FECHA DE LA PANTALLA
+   FECHA
    ========================================= */
 
 function actualizarFecha() {
@@ -128,21 +142,66 @@ function actualizarFecha() {
 
 
 /* =========================================
+   CLAVE DEL APUNTE DE HOY
+   ========================================= */
+
+function obtenerInicioDelDia() {
+
+    const ahora = new Date();
+
+    return new Date(
+        ahora.getFullYear(),
+        ahora.getMonth(),
+        ahora.getDate(),
+        0,
+        0,
+        0,
+        0
+    );
+}
+
+
+function obtenerFinDelDia() {
+
+    const ahora = new Date();
+
+    return new Date(
+        ahora.getFullYear(),
+        ahora.getMonth(),
+        ahora.getDate(),
+        23,
+        59,
+        59,
+        999
+    );
+}
+
+
+/* =========================================
    MATERIAS
    ========================================= */
 
 function cargarMaterias() {
 
-    let materias =
-        JSON.parse(
-            localStorage.getItem(
-                STORAGE_MATERIAS
-            )
-        );
+    let materias;
+
+    try {
+
+        materias =
+            JSON.parse(
+                localStorage.getItem(
+                    STORAGE_MATERIAS
+                )
+            );
+
+    } catch (error) {
+
+        materias = null;
+    }
 
 
     if (
-        !materias ||
+        !Array.isArray(materias) ||
         materias.length === 0
     ) {
 
@@ -151,14 +210,12 @@ function cargarMaterias() {
         ];
 
         guardarMaterias(materias);
-
     }
 
 
     mostrarMateriasMenu(materias);
 
     mostrarMateriasConfiguracion(materias);
-
 }
 
 
@@ -168,18 +225,23 @@ function guardarMaterias(materias) {
         STORAGE_MATERIAS,
         JSON.stringify(materias)
     );
-
 }
 
 
 function obtenerMaterias() {
 
-    return JSON.parse(
-        localStorage.getItem(
-            STORAGE_MATERIAS
-        )
-    ) || [];
+    try {
 
+        return JSON.parse(
+            localStorage.getItem(
+                STORAGE_MATERIAS
+            )
+        ) || [];
+
+    } catch (error) {
+
+        return [];
+    }
 }
 
 
@@ -192,41 +254,97 @@ function mostrarMateriasMenu(materias) {
     menuMateria.innerHTML = "";
 
 
-    materias.forEach(function(materia) {
+    materias.forEach(
+        function(materia) {
 
-        const boton =
-            document.createElement("button");
+            const boton =
+                document.createElement("button");
 
-        boton.textContent =
-            materia;
+            boton.type = "button";
+
+            boton.textContent =
+                materia;
+
+            boton.addEventListener(
+                "click",
+                function() {
+
+                    seleccionarMateria(
+                        materia
+                    );
+
+                }
+            );
+
+            menuMateria.appendChild(
+                boton
+            );
+        }
+    );
 
 
-        boton.addEventListener(
-            "click",
-            function() {
+    /* -----------------------------------------
+       APUNTES ANTERIORES
+       ----------------------------------------- */
 
-                seleccionarMateria(materia);
-
-            }
-        );
-
-
-        menuMateria.appendChild(boton);
-
-    });
-
-
-    const separador =
+    const separadorApuntes =
         document.createElement("div");
 
-    separador.className =
+    separadorApuntes.className =
         "separador";
 
-    menuMateria.appendChild(separador);
+    menuMateria.appendChild(
+        separadorApuntes
+    );
+
+
+    const apuntesAnteriores =
+        document.createElement("button");
+
+    apuntesAnteriores.type = "button";
+
+    apuntesAnteriores.textContent =
+        "📚 APUNTES ANTERIORES";
+
+    apuntesAnteriores.addEventListener(
+        "click",
+        function() {
+
+            guardarContextoActual();
+
+            menuMateria.classList.add(
+                "oculto"
+            );
+
+            abrirApuntesAnteriores();
+
+        }
+    );
+
+    menuMateria.appendChild(
+        apuntesAnteriores
+    );
+
+
+    /* -----------------------------------------
+       CONFIGURACIÓN
+       ----------------------------------------- */
+
+    const separadorConfiguracion =
+        document.createElement("div");
+
+    separadorConfiguracion.className =
+        "separador";
+
+    menuMateria.appendChild(
+        separadorConfiguracion
+    );
 
 
     const configuracion =
         document.createElement("button");
+
+    configuracion.type = "button";
 
     configuracion.className =
         "btn-configuracion";
@@ -234,17 +352,56 @@ function mostrarMateriasMenu(materias) {
     configuracion.textContent =
         "⚙ CONFIGURACIÓN";
 
-
     configuracion.addEventListener(
         "click",
         abrirConfiguracion
     );
 
-
     menuMateria.appendChild(
         configuracion
     );
+}
 
+
+/* =========================================
+   CONTEXTO DEL APUNTE ACTUAL
+   ========================================= */
+
+function guardarContextoActual() {
+
+    if (
+        materiaActual === "" &&
+        nota.value.trim() === ""
+    ) {
+
+        contextoApunteActual = null;
+
+        return;
+    }
+
+
+    contextoApunteActual = {
+
+        id:
+            apunteActualId,
+
+        materia:
+            materiaActual,
+
+        contenido:
+            nota.value,
+
+        fechaCreacion:
+            fechaCreacionActual
+                ? fechaCreacionActual.toISOString()
+                : null
+    };
+
+
+    console.log(
+        "Contexto guardado:",
+        contextoApunteActual
+    );
 }
 
 
@@ -252,71 +409,188 @@ function mostrarMateriasMenu(materias) {
    SELECCIONAR MATERIA
    ========================================= */
 
-function seleccionarMateria(materia) {
+async function seleccionarMateria(materia) {
 
-    /*
-       Si no hay materia seleccionada,
-       simplemente comenzamos un apunte nuevo.
-    */
+    menuMateria.classList.add(
+        "oculto"
+    );
 
-    if (materiaActual === "") {
 
-        materiaActual = materia;
+    if (
+        materiaActual === materia
+    ) {
 
-        iniciarNuevoApunte();
+        nota.focus();
 
         return;
     }
 
 
-    /*
-       Si es la misma materia,
-       seguimos trabajando en el mismo apunte.
-    */
+    if (
+        materiaActual !== "" &&
+        nota.value.trim() !== ""
+    ) {
 
-    if (materiaActual === materia) {
+        await guardarNota(true);
+    }
 
-        menuMateria.classList.add(
-            "oculto"
+
+    materiaActual = materia;
+
+
+    await cargarApunteDeHoy(materia);
+}
+
+
+/* =========================================
+   CARGAR APUNTE DE HOY
+   ========================================= */
+
+async function cargarApunteDeHoy(materia) {
+
+    estado.textContent =
+        "Buscando apunte de hoy · " +
+        materia;
+
+
+    const inicio =
+        obtenerInicioDelDia();
+
+    const fin =
+        obtenerFinDelDia();
+
+
+    const { data, error } =
+        await supabaseClient
+            .from("apuntes")
+            .select(
+                "id, materia, fecha_creacion, fecha_modificacion, titulo, contenido"
+            )
+            .eq(
+                "materia",
+                materia
+            )
+            .gte(
+                "fecha_creacion",
+                inicio.toISOString()
+            )
+            .lte(
+                "fecha_creacion",
+                fin.toISOString()
+            )
+            .order(
+                "fecha_creacion",
+                {
+                    ascending: false
+                }
+            )
+            .limit(1);
+
+
+    if (error) {
+
+        console.error(
+            "Error buscando apunte de hoy:",
+            error
+        );
+
+
+        iniciarNuevoApunteSinGuardar();
+
+        mostrarMensaje(
+            "No se pudo consultar el apunte de hoy."
         );
 
         return;
     }
 
 
-    /*
-       Si cambia la materia:
-       guardamos el apunte actual
-       y comenzamos uno nuevo.
-    */
+    if (
+        data &&
+        data.length > 0
+    ) {
 
-    if (nota.value.trim() !== "") {
+        cargarApunteEnPantalla(
+            data[0],
+            "Apunte de hoy · "
+        );
 
-        guardarNota(true);
-
+        return;
     }
 
 
-    materiaActual = materia;
-
-    iniciarNuevoApunte();
-
+    iniciarNuevoApunteSinGuardar();
 }
 
 
 /* =========================================
-   NUEVO APUNTE
+   NUEVO APUNTE SIN GUARDAR
    ========================================= */
 
-function iniciarNuevoApunte() {
+function iniciarNuevoApunteSinGuardar() {
 
     apunteActualId = null;
 
     fechaCreacionActual =
         new Date();
 
-
     nota.value = "";
+
+    actualizarContador();
+
+    materiaSeleccionada.textContent =
+        materiaActual || "Seleccionar";
+
+    if (materiaActual !== "") {
+
+        materiaSeleccionada.style.color =
+            "#e5e7eb";
+
+    } else {
+
+        materiaSeleccionada.style.color =
+            "#9ca3af";
+    }
+
+
+    estado.textContent =
+        materiaActual
+            ? "Nuevo apunte · " +
+              materiaActual
+            : "Nueva captura";
+
+
+    eliminarBotonVolverActual();
+
+    nota.focus();
+}
+
+
+/* =========================================
+   CARGAR APUNTE EN PANTALLA
+   ========================================= */
+
+function cargarApunteEnPantalla(
+    apunte,
+    textoEstado
+) {
+
+    apunteActualId =
+        apunte.id;
+
+    materiaActual =
+        apunte.materia;
+
+    fechaCreacionActual =
+        apunte.fecha_creacion
+            ? new Date(
+                apunte.fecha_creacion
+            )
+            : new Date();
+
+
+    nota.value =
+        apunte.contenido || "";
 
     actualizarContador();
 
@@ -324,23 +598,16 @@ function iniciarNuevoApunte() {
     materiaSeleccionada.textContent =
         materiaActual;
 
-
     materiaSeleccionada.style.color =
         "#e5e7eb";
 
 
     estado.textContent =
-        "Nuevo apunte · " +
+        textoEstado +
         materiaActual;
 
 
-    menuMateria.classList.add(
-        "oculto"
-    );
-
-
     nota.focus();
-
 }
 
 
@@ -357,7 +624,6 @@ btnMateria.addEventListener(
         menuMateria.classList.toggle(
             "oculto"
         );
-
     }
 );
 
@@ -375,9 +641,7 @@ document.addEventListener(
             menuMateria.classList.add(
                 "oculto"
             );
-
         }
-
     }
 );
 
@@ -397,7 +661,6 @@ function actualizarContador() {
     contador.textContent =
         nota.value.length +
         " caracteres";
-
 }
 
 
@@ -421,6 +684,11 @@ async function guardarNota(esAutomatico) {
         nota.value.trim();
 
 
+    /*
+       Si no hay texto,
+       NO SE GUARDA NADA.
+    */
+
     if (texto === "") {
 
         if (!esAutomatico) {
@@ -428,13 +696,16 @@ async function guardarNota(esAutomatico) {
             mostrarMensaje(
                 "No hay nada para guardar."
             );
-
         }
 
-        return;
-
+        return false;
     }
 
+
+    /*
+       Si no hay materia,
+       tampoco guardamos.
+    */
 
     if (materiaActual === "") {
 
@@ -443,18 +714,15 @@ async function guardarNota(esAutomatico) {
             mostrarMensaje(
                 "Primero elegí una materia."
             );
-
         }
 
-        return;
-
+        return false;
     }
 
 
-    /*
-       Si todavía no existe un ID,
-       estamos creando un apunte nuevo.
-    */
+    /* =====================================
+       CREAR NUEVO APUNTE
+       ===================================== */
 
     if (!apunteActualId) {
 
@@ -472,12 +740,10 @@ async function guardarNota(esAutomatico) {
                         materiaActual,
 
                     fecha_creacion:
-                        fechaCreacion
-                            .toISOString(),
+                        fechaCreacion.toISOString(),
 
                     fecha_modificacion:
-                        new Date()
-                            .toISOString(),
+                        new Date().toISOString(),
 
                     titulo:
                         obtenerTitulo(),
@@ -503,11 +769,9 @@ async function guardarNota(esAutomatico) {
                 mostrarMensaje(
                     "Error al guardar."
                 );
-
             }
 
-            return;
-
+            return false;
         }
 
 
@@ -531,19 +795,16 @@ async function guardarNota(esAutomatico) {
             mostrarMensaje(
                 "✓ Apunte guardado"
             );
-
         }
 
 
-        return;
-
+        return true;
     }
 
 
-    /*
-       Si ya existe ID,
-       actualizamos el apunte.
-    */
+    /* =====================================
+       ACTUALIZAR APUNTE EXISTENTE
+       ===================================== */
 
     const ahora =
         new Date();
@@ -586,11 +847,9 @@ async function guardarNota(esAutomatico) {
             mostrarMensaje(
                 "Error al actualizar."
             );
-
         }
 
-        return;
-
+        return false;
     }
 
 
@@ -604,9 +863,10 @@ async function guardarNota(esAutomatico) {
         mostrarMensaje(
             "✓ Cambios guardados"
         );
-
     }
 
+
+    return true;
 }
 
 
@@ -623,17 +883,12 @@ function obtenerTitulo() {
     if (texto === "") {
 
         return "Apunte";
-
     }
 
 
-    /*
-       Por ahora utilizamos la primera línea
-       como título.
-    */
-
     const primeraLinea =
-        texto.split("\n")[0]
+        texto
+            .split("\n")[0]
             .trim();
 
 
@@ -645,23 +900,30 @@ function obtenerTitulo() {
             0,
             80
         );
-
     }
 
 
-    return primeraLinea || "Apunte";
-
+    return primeraLinea ||
+        "Apunte";
 }
 
 
 /* =========================================
-   GUARDADO AUTOMÁTICO
+   AUTOGUARDADO
    ========================================= */
 
 function iniciarGuardadoAutomatico() {
 
+    if (guardadoAutomatico) {
+
+        clearInterval(
+            guardadoAutomatico
+        );
+    }
+
+
     /*
-       Cada 5 minutos.
+       Autoguardado cada 5 minutos.
     */
 
     guardadoAutomatico =
@@ -674,23 +936,21 @@ function iniciarGuardadoAutomatico() {
                 ) {
 
                     guardarNota(true);
-
                 }
 
             },
             5 * 60 * 1000
         );
-
 }
 
 
 /* =========================================
-   NUEVO
+   NUEVO APUNTE
    ========================================= */
 
 btnNuevo.addEventListener(
     "click",
-    function() {
+    async function() {
 
         if (
             nota.value.trim() !== ""
@@ -705,25 +965,26 @@ btnNuevo.addEventListener(
             if (!confirmar) {
 
                 return;
-
             }
 
+
+            await guardarNota(true);
         }
 
 
-        if (materiaActual === "") {
+        if (
+            materiaActual === ""
+        ) {
 
             mostrarMensaje(
                 "Primero elegí una materia."
             );
 
             return;
-
         }
 
 
-        iniciarNuevoApunte();
-
+        iniciarNuevoApunteSinGuardar();
     }
 );
 
@@ -747,7 +1008,677 @@ function mostrarMensaje(texto) {
         },
         2000
     );
+}
 
+
+/* =========================================
+   APUNTES ANTERIORES
+   ========================================= */
+
+async function abrirApuntesAnteriores() {
+
+    mostrarMensaje(
+        "Buscando apuntes..."
+    );
+
+
+    const { data, error } =
+        await supabaseClient
+            .from("apuntes")
+            .select(
+                "id, materia, fecha_creacion, fecha_modificacion, titulo, contenido"
+            )
+            .order(
+                "fecha_creacion",
+                {
+                    ascending: false
+                }
+            );
+
+
+    if (error) {
+
+        console.error(
+            "Error al buscar apuntes:",
+            error
+        );
+
+
+        mostrarMensaje(
+            "Error al buscar apuntes."
+        );
+
+        return;
+    }
+
+
+    mostrarListaApuntes(
+        data || []
+    );
+}
+
+
+/* =========================================
+   MODAL DE APUNTES ANTERIORES
+   ========================================= */
+
+function mostrarListaApuntes(apuntes) {
+
+    const modalExistente =
+        document.getElementById(
+            "modalApuntes"
+        );
+
+
+    if (modalExistente) {
+
+        modalExistente.remove();
+    }
+
+
+    const modal =
+        document.createElement("div");
+
+    modal.id =
+        "modalApuntes";
+
+    modal.className =
+        "modal";
+
+
+    const contenido =
+        document.createElement("div");
+
+    contenido.className =
+        "modal-contenido";
+
+
+    const encabezado =
+        document.createElement("div");
+
+    encabezado.className =
+        "modal-header";
+
+
+    const titulo =
+        document.createElement("h2");
+
+    titulo.textContent =
+        "MIS APUNTES";
+
+
+    const cerrar =
+        document.createElement("button");
+
+    cerrar.className =
+        "btn-cerrar";
+
+    cerrar.textContent =
+        "×";
+
+    cerrar.title =
+        "Cerrar";
+
+
+    cerrar.addEventListener(
+        "click",
+        function() {
+
+            volverAlContexto();
+
+            modal.remove();
+
+        }
+    );
+
+
+    encabezado.appendChild(
+        titulo
+    );
+
+    encabezado.appendChild(
+        cerrar
+    );
+
+    contenido.appendChild(
+        encabezado
+    );
+
+
+    if (
+        apuntes.length === 0
+    ) {
+
+        const vacio =
+            document.createElement("p");
+
+        vacio.textContent =
+            "Todavía no hay apuntes guardados.";
+
+        vacio.style.color =
+            "#9ca3af";
+
+        vacio.style.textAlign =
+            "center";
+
+        vacio.style.padding =
+            "30px 10px";
+
+
+        contenido.appendChild(
+            vacio
+        );
+    }
+
+
+    apuntes.forEach(
+        function(apunte) {
+
+            const item =
+                document.createElement(
+                    "button"
+                );
+
+
+            item.type =
+                "button";
+
+
+            item.style.width =
+                "100%";
+
+            item.style.textAlign =
+                "left";
+
+            item.style.padding =
+                "13px";
+
+            item.style.marginBottom =
+                "8px";
+
+            item.style.border =
+                "1px solid #1f2937";
+
+            item.style.borderRadius =
+                "10px";
+
+            item.style.background =
+                "#030712";
+
+            item.style.color =
+                "#e5e7eb";
+
+            item.style.cursor =
+                "pointer";
+
+
+            const materia =
+                document.createElement(
+                    "div"
+                );
+
+
+            materia.textContent =
+                apunte.materia;
+
+            materia.style.fontWeight =
+                "700";
+
+            materia.style.fontSize =
+                "14px";
+
+
+            const fechaApunte =
+                document.createElement(
+                    "div"
+                );
+
+
+            fechaApunte.textContent =
+                formatearFechaApunte(
+                    apunte.fecha_creacion
+                );
+
+            fechaApunte.style.color =
+                "#9ca3af";
+
+            fechaApunte.style.fontSize =
+                "12px";
+
+            fechaApunte.style.marginTop =
+                "4px";
+
+
+            const tituloApunte =
+                document.createElement(
+                    "div"
+                );
+
+
+            tituloApunte.textContent =
+                apunte.titulo ||
+                "Apunte";
+
+            tituloApunte.style.color =
+                "#d1d5db";
+
+            tituloApunte.style.fontSize =
+                "13px";
+
+            tituloApunte.style.marginTop =
+                "3px";
+
+
+            item.appendChild(
+                materia
+            );
+
+            item.appendChild(
+                fechaApunte
+            );
+
+            item.appendChild(
+                tituloApunte
+            );
+
+
+            item.addEventListener(
+                "click",
+                function() {
+
+                    cargarApunteAnterior(
+                        apunte
+                    );
+
+                    modal.remove();
+
+                }
+            );
+
+
+            contenido.appendChild(
+                item
+            );
+        }
+    );
+
+
+    const botonCerrar =
+        document.createElement(
+            "button"
+        );
+
+
+    botonCerrar.className =
+        "btn-modal-cerrar";
+
+    botonCerrar.textContent =
+        "CERRAR";
+
+
+    botonCerrar.addEventListener(
+        "click",
+        function() {
+
+            volverAlContexto();
+
+            modal.remove();
+
+        }
+    );
+
+
+    contenido.appendChild(
+        botonCerrar
+    );
+
+
+    modal.appendChild(
+        contenido
+    );
+
+
+    document.body.appendChild(
+        modal
+    );
+}
+
+
+/* =========================================
+   FORMATEAR FECHA
+   ========================================= */
+
+function formatearFechaApunte(
+    fechaTexto
+) {
+
+    if (!fechaTexto) {
+
+        return "";
+    }
+
+
+    const fecha =
+        new Date(
+            fechaTexto
+        );
+
+
+    if (
+        Number.isNaN(
+            fecha.getTime()
+        )
+    ) {
+
+        return "";
+    }
+
+
+    return fecha.toLocaleDateString(
+        "es-AR",
+        {
+            weekday: "short",
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric"
+        }
+    );
+}
+
+
+/* =========================================
+   CARGAR APUNTE ANTERIOR
+   ========================================= */
+
+function cargarApunteAnterior(
+    apunte
+) {
+
+    apunteActualId =
+        apunte.id;
+
+
+    materiaActual =
+        apunte.materia;
+
+
+    fechaCreacionActual =
+        apunte.fecha_creacion
+            ? new Date(
+                apunte.fecha_creacion
+            )
+            : new Date();
+
+
+    nota.value =
+        apunte.contenido || "";
+
+
+    actualizarContador();
+
+
+    materiaSeleccionada.textContent =
+        materiaActual;
+
+
+    materiaSeleccionada.style.color =
+        "#e5e7eb";
+
+
+    estado.textContent =
+        "Apunte anterior · " +
+        materiaActual;
+
+
+    mostrarMensaje(
+        "✓ Apunte cargado"
+    );
+
+
+    nota.focus();
+
+
+    crearBotonVolverActual();
+}
+
+
+/* =========================================
+   BOTÓN VOLVER AL APUNTE ACTUAL
+   ========================================= */
+
+function crearBotonVolverActual() {
+
+    eliminarBotonVolverActual();
+
+
+    const boton =
+        document.createElement(
+            "button"
+        );
+
+
+    boton.id =
+        "btnVolverActual";
+
+
+    boton.textContent =
+        "↩ VOLVER AL APUNTE ACTUAL";
+
+
+    boton.style.position =
+        "fixed";
+
+    boton.style.bottom =
+        "85px";
+
+    boton.style.left =
+        "50%";
+
+    boton.style.transform =
+        "translateX(-50%)";
+
+    boton.style.zIndex =
+        "200";
+
+    boton.style.height =
+        "42px";
+
+    boton.style.padding =
+        "0 16px";
+
+    boton.style.border =
+        "1px solid #374151";
+
+    boton.style.borderRadius =
+        "10px";
+
+    boton.style.background =
+        "#111827";
+
+    boton.style.color =
+        "#e5e7eb";
+
+    boton.style.fontSize =
+        "12px";
+
+    boton.style.fontWeight =
+        "700";
+
+    boton.style.cursor =
+        "pointer";
+
+
+    boton.addEventListener(
+        "click",
+        function() {
+
+            volverAlContexto();
+
+        }
+    );
+
+
+    document.body.appendChild(
+        boton
+    );
+}
+
+
+/* =========================================
+   ELIMINAR BOTÓN VOLVER
+   ========================================= */
+
+function eliminarBotonVolverActual() {
+
+    const boton =
+        document.getElementById(
+            "btnVolverActual"
+        );
+
+
+    if (boton) {
+
+        boton.remove();
+    }
+}
+
+
+/* =========================================
+   VOLVER AL APUNTE ACTUAL
+   ========================================= */
+
+async function volverAlContexto() {
+
+    eliminarBotonVolverActual();
+
+
+    if (
+        !contextoApunteActual
+    ) {
+
+        return;
+    }
+
+
+    const contexto =
+        contextoApunteActual;
+
+
+    if (contexto.id) {
+
+        const { data, error } =
+            await supabaseClient
+                .from("apuntes")
+                .select(
+                    "id, materia, fecha_creacion, contenido"
+                )
+                .eq(
+                    "id",
+                    contexto.id
+                )
+                .single();
+
+
+        if (
+            !error &&
+            data
+        ) {
+
+            apunteActualId =
+                data.id;
+
+            materiaActual =
+                data.materia;
+
+            fechaCreacionActual =
+                data.fecha_creacion
+                    ? new Date(
+                        data.fecha_creacion
+                    )
+                    : new Date();
+
+
+            nota.value =
+                data.contenido || "";
+
+
+            actualizarContador();
+
+
+            materiaSeleccionada.textContent =
+                materiaActual;
+
+            materiaSeleccionada.style.color =
+                "#e5e7eb";
+
+
+            estado.textContent =
+                "Apunte actual · " +
+                materiaActual;
+
+
+            contextoApunteActual =
+                null;
+
+
+            mostrarMensaje(
+                "↩ Volviste al apunte actual"
+            );
+
+
+            nota.focus();
+
+            return;
+        }
+    }
+
+
+    apunteActualId =
+        contexto.id;
+
+
+    materiaActual =
+        contexto.materia;
+
+
+    fechaCreacionActual =
+        contexto.fechaCreacion
+            ? new Date(
+                contexto.fechaCreacion
+            )
+            : new Date();
+
+
+    nota.value =
+        contexto.contenido || "";
+
+
+    actualizarContador();
+
+
+    materiaSeleccionada.textContent =
+        materiaActual;
+
+
+    materiaSeleccionada.style.color =
+        "#e5e7eb";
+
+
+    estado.textContent =
+        "Apunte actual · " +
+        materiaActual;
+
+
+    contextoApunteActual =
+        null;
+
+
+    mostrarMensaje(
+        "↩ Volviste al apunte actual"
+    );
+
+
+    nota.focus();
 }
 
 
@@ -770,7 +1701,6 @@ function abrirConfiguracion() {
     modalConfiguracion.classList.remove(
         "oculto"
     );
-
 }
 
 
@@ -782,7 +1712,6 @@ function cerrarConfiguracion() {
 
 
     nota.focus();
-
 }
 
 
@@ -810,7 +1739,10 @@ function mostrarMateriasConfiguracion(
 
 
     materias.forEach(
-        function(materia, indice) {
+        function(
+            materia,
+            indice
+        ) {
 
             const fila =
                 document.createElement(
@@ -830,7 +1762,6 @@ function mostrarMateriasConfiguracion(
 
             nombre.className =
                 "materia-nombre";
-
 
             nombre.textContent =
                 materia;
@@ -852,9 +1783,11 @@ function mostrarMateriasConfiguracion(
                 );
 
 
+            editar.type =
+                "button";
+
             editar.textContent =
                 "✏";
-
 
             editar.title =
                 "Editar materia";
@@ -878,9 +1811,11 @@ function mostrarMateriasConfiguracion(
                 );
 
 
+            eliminar.type =
+                "button";
+
             eliminar.textContent =
                 "×";
-
 
             eliminar.title =
                 "Eliminar materia";
@@ -902,7 +1837,6 @@ function mostrarMateriasConfiguracion(
                 editar
             );
 
-
             acciones.appendChild(
                 eliminar
             );
@@ -912,7 +1846,6 @@ function mostrarMateriasConfiguracion(
                 nombre
             );
 
-
             fila.appendChild(
                 acciones
             );
@@ -921,10 +1854,8 @@ function mostrarMateriasConfiguracion(
             listaMaterias.appendChild(
                 fila
             );
-
         }
     );
-
 }
 
 
@@ -947,9 +1878,7 @@ nuevaMateria.addEventListener(
         ) {
 
             agregarMateria();
-
         }
-
     }
 );
 
@@ -962,10 +1891,11 @@ function agregarMateria() {
             .toUpperCase();
 
 
-    if (nombre === "") {
+    if (
+        nombre === ""
+    ) {
 
         return;
-
     }
 
 
@@ -990,7 +1920,6 @@ function agregarMateria() {
         );
 
         return;
-
     }
 
 
@@ -1014,7 +1943,6 @@ function agregarMateria() {
     mostrarMateriasConfiguracion(
         materias
     );
-
 }
 
 
@@ -1022,7 +1950,9 @@ function agregarMateria() {
    EDITAR MATERIA
    ========================================= */
 
-function editarMateria(indice) {
+function editarMateria(
+    indice
+) {
 
     let materias =
         obtenerMaterias();
@@ -1044,7 +1974,6 @@ function editarMateria(indice) {
     ) {
 
         return;
-
     }
 
 
@@ -1054,10 +1983,37 @@ function editarMateria(indice) {
             .toUpperCase();
 
 
-    if (nombre === "") {
+    if (
+        nombre === ""
+    ) {
 
         return;
+    }
 
+
+    const existe =
+        materias.some(
+            function(
+                materia,
+                i
+            ) {
+
+                return (
+                    i !== indice &&
+                    materia === nombre
+                );
+
+            }
+        );
+
+
+    if (existe) {
+
+        alert(
+            "Esa materia ya existe."
+        );
+
+        return;
     }
 
 
@@ -1083,9 +2039,8 @@ function editarMateria(indice) {
 
 
         estado.textContent =
-            "Nuevo apunte · " +
+            "Apunte actual · " +
             nombre;
-
     }
 
 
@@ -1095,7 +2050,6 @@ function editarMateria(indice) {
     mostrarMateriasConfiguracion(
         materias
     );
-
 }
 
 
@@ -1103,7 +2057,9 @@ function editarMateria(indice) {
    ELIMINAR MATERIA
    ========================================= */
 
-function eliminarMateria(indice) {
+function eliminarMateria(
+    indice
+) {
 
     let materias =
         obtenerMaterias();
@@ -1118,7 +2074,6 @@ function eliminarMateria(indice) {
         );
 
         return;
-
     }
 
 
@@ -1137,7 +2092,6 @@ function eliminarMateria(indice) {
     if (!confirmar) {
 
         return;
-
     }
 
 
@@ -1159,6 +2113,17 @@ function eliminarMateria(indice) {
         materiaActual =
             "";
 
+        apunteActualId =
+            null;
+
+        fechaCreacionActual =
+            null;
+
+        nota.value =
+            "";
+
+        actualizarContador();
+
 
         materiaSeleccionada.textContent =
             "Seleccionar";
@@ -1171,6 +2136,8 @@ function eliminarMateria(indice) {
         estado.textContent =
             "Nueva captura";
 
+
+        eliminarBotonVolverActual();
     }
 
 
@@ -1180,7 +2147,130 @@ function eliminarMateria(indice) {
     mostrarMateriasConfiguracion(
         materias
     );
+}
 
+
+/* =========================================
+   EXPANSIÓN DEL ÁREA DE ESCRITURA
+   ========================================= */
+
+function iniciarExpansionEscritura() {
+
+    const contenido =
+        document.querySelector(
+            ".contenido"
+        );
+
+
+    if (!contenido || !nota) {
+
+        return;
+    }
+
+
+    /*
+       COMPUTADORA:
+       doble clic sobre el área de escritura.
+    */
+
+    nota.addEventListener(
+        "dblclick",
+        function() {
+
+            alternarExpansionEscritura();
+
+        }
+    );
+
+
+    /*
+       PANTALLA TÁCTIL:
+       doble toque sobre el área de escritura.
+    */
+
+    let ultimoToque = 0;
+
+
+    nota.addEventListener(
+        "touchend",
+        function(event) {
+
+            const ahora =
+                Date.now();
+
+
+            const diferencia =
+                ahora - ultimoToque;
+
+
+            if (
+                diferencia > 0 &&
+                diferencia < 350
+            ) {
+
+                event.preventDefault();
+
+                alternarExpansionEscritura();
+
+                ultimoToque = 0;
+
+                return;
+            }
+
+
+            ultimoToque =
+                ahora;
+        },
+        {
+            passive: false
+        }
+    );
+}
+
+
+function alternarExpansionEscritura() {
+
+    const contenido =
+        document.querySelector(
+            ".contenido"
+        );
+
+
+    if (!contenido) {
+
+        return;
+    }
+
+
+    contenido.classList.toggle(
+        "contenido-expandido"
+    );
+
+
+    /*
+       Dejamos nuevamente el cursor
+       dentro del apunte.
+    */
+
+    nota.focus();
+
+
+    if (
+        contenido.classList.contains(
+            "contenido-expandido"
+        )
+    ) {
+
+        console.log(
+            "Área de escritura expandida."
+        );
+
+    } else {
+
+        console.log(
+            "Área de escritura normal."
+        );
+    }
 }
 
 
@@ -1192,13 +2282,6 @@ window.addEventListener(
     "beforeunload",
     function() {
 
-        /*
-           No podemos esperar una consulta
-           asíncrona a Supabase aquí.
-           El guardado automático periódico
-           es la protección principal.
-        */
-
         if (
             nota.value.trim() !== "" &&
             materiaActual !== ""
@@ -1207,8 +2290,6 @@ window.addEventListener(
             console.log(
                 "Hay cambios en el apunte."
             );
-
         }
-
     }
 );
