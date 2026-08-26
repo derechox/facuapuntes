@@ -1,3 +1,4 @@
+```css
 /* =========================================
    DERECHO UBA
    ESTILOS PRINCIPALES
@@ -10,6 +11,13 @@
 }
 
 
+html,
+body {
+    width: 100%;
+    min-height: 100%;
+}
+
+
 body {
     font-family: Inter, Arial, sans-serif;
 
@@ -17,7 +25,9 @@ body {
 
     color: #e5e7eb;
 
-    min-height: 100vh;
+    height: 100dvh;
+
+    overflow: hidden;
 
     display: flex;
 
@@ -34,7 +44,9 @@ body {
 
     max-width: 720px;
 
-    min-height: 100vh;
+    height: 100dvh;
+
+    min-height: 0;
 
     display: flex;
 
@@ -254,6 +266,8 @@ body {
 .contenido {
     flex: 1;
 
+    min-height: 0;
+
     display: flex;
 
     flex-direction: column;
@@ -265,7 +279,7 @@ textarea {
 
     flex: 1;
 
-    min-height: 62vh;
+    min-height: 0;
 
     resize: none;
 
@@ -318,6 +332,8 @@ textarea::placeholder {
     color: #6b7280;
 
     font-size: 12px;
+
+    flex-shrink: 0;
 }
 
 
@@ -331,6 +347,8 @@ textarea::placeholder {
     gap: 10px;
 
     padding-top: 4px;
+
+    flex-shrink: 0;
 }
 
 
@@ -395,6 +413,8 @@ textarea::placeholder {
     color: #60a5fa;
 
     font-size: 13px;
+
+    flex-shrink: 0;
 }
 
 
@@ -662,7 +682,9 @@ textarea::placeholder {
 
     .app {
         width: 100%;
+
         height: 100dvh;
+
         min-height: 0;
 
         padding: 12px;
@@ -746,3 +768,4 @@ textarea::placeholder {
         width: 200px;
     }
 }
+```
