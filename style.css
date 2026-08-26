@@ -652,7 +652,19 @@ textarea::placeholder {
 
 @media (max-width: 500px) {
 
+    html,
+    body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+
+
     .app {
+        width: 100%;
+        height: 100dvh;
+        min-height: 0;
+
         padding: 12px;
     }
 
@@ -690,8 +702,15 @@ textarea::placeholder {
     }
 
 
+    .contenido {
+        min-height: 0;
+    }
+
+
     textarea {
-        min-height: 66vh;
+        min-height: 0;
+
+        height: auto;
 
         padding: 17px;
 
@@ -701,10 +720,25 @@ textarea::placeholder {
     }
 
 
+    .informacion {
+        flex-shrink: 0;
+    }
+
+
+    .botones {
+        flex-shrink: 0;
+    }
+
+
     .btn {
         height: 54px;
 
         font-size: 13px;
+    }
+
+
+    .mensaje {
+        flex-shrink: 0;
     }
 
 
