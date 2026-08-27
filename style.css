@@ -822,3 +822,106 @@ textarea::placeholder {
         width: 200px;
     }
 }
+
+/* =========================================
+   BOTONES PRINCIPALES
+   ========================================= */
+
+.botones {
+    display: flex;
+
+    gap: 10px;
+
+    width: 100%;
+
+    padding-top: 4px;
+
+    flex-shrink: 0;
+}
+
+
+.btn {
+    flex: 1;
+
+    min-width: 0;
+
+    width: 0;
+
+    height: 52px;
+
+    border: none;
+
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    transition:
+        transform 0.1s ease,
+        opacity 0.1s ease;
+
+    background: #374151;
+
+    color: #ffffff;
+}
+
+
+.btn:active {
+    transform: scale(0.97);
+}
+
+
+/* =========================================
+   COMPARTIR
+   ========================================= */
+
+.btn-herramienta {
+    background: #374151;
+
+    color: #ffffff;
+}
+
+
+/* =========================================
+   RESALTADOR
+   ========================================= */
+
+#btnResaltador {
+    background: #374151;
+
+    color: #ffffff;
+}
+
+
+/* =========================================
+   IA
+   ========================================= */
+
+#btnIA {
+    background: #374151;
+
+    color: #ffffff;
+}
+
+
+/* =========================================
+   GUARDAR
+   ========================================= */
+
+.btn-guardar {
+    background: #1e40af;
+
+    color: #ffffff;
+}
+
+
+/* =========================================
+   HOVER
+   ========================================= */
+
+.btn:hover {
+    opacity: 0.9;
+}
