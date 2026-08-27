@@ -2,13 +2,11 @@
    FACU-APUNTES
    SUPABASE + APUNTES ANTERIORES
 
-   - APUNTE DEL DÍA POR MATERIA
+   - UN APUNTE POR MATERIA Y POR DÍA
    - VOLVER AL APUNTE ACTUAL
    - AUTOGUARDADO
    - COPIA LOCAL DE SEGURIDAD
-   - COMPARTIR
-   - RESALTADOR
-   - IA
+   - RECUPERAR ÚLTIMA MATERIA
    ========================================= */
 
 
@@ -28,6 +26,9 @@ const STORAGE_MATERIAS =
 const STORAGE_BORRADOR =
     "facu_apuntes_borrador_actual";
 
+const STORAGE_ULTIMA_MATERIA =
+    "facu_apuntes_ultima_materia";
+
 
 /* =========================================
    ELEMENTOS HTML
@@ -43,9 +44,7 @@ const fecha =
     document.getElementById("fecha");
 
 const materiaSeleccionada =
-    document.getElementById(
-        "materiaSeleccionada"
-    );
+    document.getElementById("materiaSeleccionada");
 
 const nota =
     document.getElementById("nota");
@@ -59,47 +58,40 @@ const estado =
 const mensaje =
     document.getElementById("mensaje");
 
-const btnCompartir =
-    document.getElementById("btnCompartir");
-
-const btnResaltador =
-    document.getElementById("btnResaltador");
-
-const btnIA =
-    document.getElementById("btnIA");
-
 const btnGuardar =
     document.getElementById("btnGuardar");
 
 const modalConfiguracion =
-    document.getElementById(
-        "modalConfiguracion"
-    );
+    document.getElementById("modalConfiguracion");
 
 const btnCerrarConfiguracion =
-    document.getElementById(
-        "btnCerrarConfiguracion"
-    );
+    document.getElementById("btnCerrarConfiguracion");
 
 const btnCerrarModal =
-    document.getElementById(
-        "btnCerrarModal"
-    );
+    document.getElementById("btnCerrarModal");
 
 const listaMaterias =
-    document.getElementById(
-        "listaMaterias"
-    );
+    document.getElementById("listaMaterias");
 
 const nuevaMateria =
-    document.getElementById(
-        "nuevaMateria"
-    );
+    document.getElementById("nuevaMateria");
 
 const btnAgregarMateria =
-    document.getElementById(
-        "btnAgregarMateria"
-    );
+    document.getElementById("btnAgregarMateria");
+
+
+/* =========================================
+   BOTONES NUEVOS
+   ========================================= */
+
+const btnCompartir =
+    document.getElementById("btnCompartir");
+
+const btnTexto =
+    document.getElementById("btnTexto");
+
+const btnIA =
+    document.getElementById("btnIA");
 
 
 /* =========================================
@@ -115,12 +107,6 @@ let fechaCreacionActual = null;
 let guardadoAutomatico = null;
 
 let contextoApunteActual = null;
-
-
-/*
-   Evita guardar una copia local mientras
-   estamos cargando un apunte desde Supabase.
-*/
 
 let cargandoApunte = false;
 
@@ -140,108 +126,67 @@ async function iniciar() {
 
     actualizarContador();
 
-    prepararBotones();
-
     iniciarGuardadoAutomatico();
+
 
     console.log(
         "Facu Apuntes iniciado."
     );
-}
 
 
-/* =========================================
-   PREPARAR BOTONES
-   ========================================= */
-
-function prepararBotones() {
-
-    /*
-       Los cuatro botones tienen exactamente
-       el mismo tamaño.
-    */
-
-    const botones = [
-        btnCompartir,
-        btnResaltador,
-        btnIA,
-        btnGuardar
-    ];
-
-    botones.forEach(
-        function(boton) {
-
-            if (!boton) {
-                return;
-            }
-
-            boton.classList.add("btn");
-
-            boton.style.flex = "1";
-
-            boton.style.minWidth = "0";
-        }
-    );
+    let ultimaMateria = null;
 
 
-    /*
-       COMPARTIR
-       Todavía sin función.
-    */
+    try {
 
-    if (btnCompartir) {
+        ultimaMateria =
+            localStorage.getItem(
+                STORAGE_ULTIMA_MATERIA
+            );
 
-        btnCompartir.addEventListener(
-            "click",
-            function() {
+    } catch (error) {
 
-                mostrarMensaje(
-                    "Compartir próximamente."
-                );
-
-            }
+        console.error(
+            "No se pudo recuperar la última materia:",
+            error
         );
     }
 
 
-    /*
-       RESALTADOR
-       Todavía sin función.
-    */
+    if (
+        ultimaMateria &&
+        obtenerMaterias().includes(
+            ultimaMateria
+        )
+    ) {
 
-    if (btnResaltador) {
+        materiaActual =
+            ultimaMateria;
 
-        btnResaltador.addEventListener(
-            "click",
-            function() {
 
-                mostrarMensaje(
-                    "Resaltador próximamente."
-                );
+        materiaSeleccionada.textContent =
+            ultimaMateria;
 
-            }
+
+        materiaSeleccionada.style.color =
+            "#e5e7eb";
+
+
+        await cargarApunteDeHoy(
+            ultimaMateria
         );
+
+
+        return;
     }
 
 
-    /*
-       IA
-       Todavía sin función.
-    */
+    materiaSeleccionada.textContent =
+        "Seleccionar";
 
-    if (btnIA) {
 
-        btnIA.addEventListener(
-            "click",
-            function() {
-
-                mostrarMensaje(
-                    "IA próximamente."
-                );
-
-            }
-        );
-    }
+    estado.textContent =
+        "Nueva captura";
 }
 
 
@@ -254,18 +199,75 @@ function actualizarFecha() {
     const ahora =
         new Date();
 
+
     const opciones = {
+
         weekday: "long",
+
         day: "2-digit",
+
         month: "2-digit",
+
         year: "numeric"
+
     };
+
 
     fecha.textContent =
         ahora.toLocaleDateString(
             "es-AR",
             opciones
         );
+}
+
+
+/* =========================================
+   FECHA DEL DÍA PARA SUPABASE
+   =========================================
+
+   Devuelve:
+
+   YYYY-MM-DD
+
+   utilizando la fecha local
+   de Argentina / navegador.
+   ========================================= */
+
+function obtenerFechaDia() {
+
+    const ahora =
+        new Date();
+
+
+    const año =
+        ahora.getFullYear();
+
+
+    const mes =
+        String(
+            ahora.getMonth() + 1
+        ).padStart(
+            2,
+            "0"
+        );
+
+
+    const dia =
+        String(
+            ahora.getDate()
+        ).padStart(
+            2,
+            "0"
+        );
+
+
+    return (
+        año +
+        "-" +
+        mes +
+        "-" +
+        dia
+    );
 }
 
 
@@ -278,14 +280,20 @@ function obtenerInicioDelDia() {
     const ahora =
         new Date();
 
+
     return new Date(
+
         ahora.getFullYear(),
+
         ahora.getMonth(),
+
         ahora.getDate(),
+
         0,
         0,
         0,
         0
+
     );
 }
 
@@ -299,14 +307,20 @@ function obtenerFinDelDia() {
     const ahora =
         new Date();
 
+
     return new Date(
+
         ahora.getFullYear(),
+
         ahora.getMonth(),
+
         ahora.getDate(),
+
         23,
         59,
         59,
         999
+
     );
 }
 
@@ -318,6 +332,7 @@ function obtenerFinDelDia() {
 function cargarMaterias() {
 
     let materias;
+
 
     try {
 
@@ -343,6 +358,7 @@ function cargarMaterias() {
             ...MATERIAS_POR_DEFECTO
         ];
 
+
         guardarMaterias(
             materias
         );
@@ -352,6 +368,7 @@ function cargarMaterias() {
     mostrarMateriasMenu(
         materias
     );
+
 
     mostrarMateriasConfiguracion(
         materias
@@ -364,8 +381,13 @@ function guardarMaterias(
 ) {
 
     localStorage.setItem(
+
         STORAGE_MATERIAS,
-        JSON.stringify(materias)
+
+        JSON.stringify(
+            materias
+        )
+
     );
 }
 
@@ -375,9 +397,11 @@ function obtenerMaterias() {
     try {
 
         return JSON.parse(
+
             localStorage.getItem(
                 STORAGE_MATERIAS
             )
+
         ) || [];
 
     } catch (error) {
@@ -406,7 +430,10 @@ function mostrarMateriasMenu(
                     "button"
                 );
 
-            boton.type = "button";
+
+            boton.type =
+                "button";
+
 
             boton.textContent =
                 materia;
@@ -427,6 +454,7 @@ function mostrarMateriasMenu(
             menuMateria.appendChild(
                 boton
             );
+
         }
     );
 
@@ -439,6 +467,7 @@ function mostrarMateriasMenu(
         document.createElement(
             "div"
         );
+
 
     separadorApuntes.className =
         "separador";
@@ -454,8 +483,10 @@ function mostrarMateriasMenu(
             "button"
         );
 
+
     apuntesAnteriores.type =
         "button";
+
 
     apuntesAnteriores.textContent =
         "📚 APUNTES ANTERIORES";
@@ -467,9 +498,11 @@ function mostrarMateriasMenu(
 
             guardarContextoActual();
 
+
             menuMateria.classList.add(
                 "oculto"
             );
+
 
             abrirApuntesAnteriores();
 
@@ -491,6 +524,7 @@ function mostrarMateriasMenu(
             "div"
         );
 
+
     separadorConfiguracion.className =
         "separador";
 
@@ -505,11 +539,14 @@ function mostrarMateriasMenu(
             "button"
         );
 
+
     configuracion.type =
         "button";
 
+
     configuracion.className =
         "btn-configuracion";
+
 
     configuracion.textContent =
         "⚙ CONFIGURACIÓN";
@@ -541,6 +578,7 @@ function guardarContextoActual() {
         contextoApunteActual =
             null;
 
+
         return;
     }
 
@@ -560,6 +598,7 @@ function guardarContextoActual() {
             fechaCreacionActual
                 ? fechaCreacionActual.toISOString()
                 : null
+
     };
 
 
@@ -589,13 +628,14 @@ async function seleccionarMateria(
 
         nota.focus();
 
+
         return;
     }
 
 
     /*
-       Si cambiamos de materia y hay texto,
-       guardamos antes de cambiar.
+       Guardamos antes de cambiar
+       de materia.
     */
 
     if (
@@ -609,6 +649,25 @@ async function seleccionarMateria(
 
     materiaActual =
         materia;
+
+
+    try {
+
+        localStorage.setItem(
+
+            STORAGE_ULTIMA_MATERIA,
+
+            materia
+
+        );
+
+    } catch (error) {
+
+        console.error(
+            "No se pudo guardar la última materia:",
+            error
+        );
+    }
 
 
     await cargarApunteDeHoy(
@@ -630,37 +689,41 @@ async function cargarApunteDeHoy(
         materia;
 
 
-    const inicio =
-        obtenerInicioDelDia();
-
-    const fin =
-        obtenerFinDelDia();
+    const fechaDia =
+        obtenerFechaDia();
 
 
-    const { data, error } =
+    /*
+       Ahora buscamos directamente por:
+
+       materia + fecha_dia
+
+       Esto evita depender de
+       fecha_creacion + hora.
+    */
+
+    const {
+        data,
+        error
+    } =
         await supabaseClient
+
             .from("apuntes")
+
             .select(
-                "id, materia, fecha_creacion, fecha_modificacion, titulo, contenido"
+                "id, materia, fecha_dia, fecha_creacion, fecha_modificacion, titulo, contenido"
             )
+
             .eq(
                 "materia",
                 materia
             )
-            .gte(
-                "fecha_creacion",
-                inicio.toISOString()
+
+            .eq(
+                "fecha_dia",
+                fechaDia
             )
-            .lte(
-                "fecha_creacion",
-                fin.toISOString()
-            )
-            .order(
-                "fecha_creacion",
-                {
-                    ascending: false
-                }
-            )
+
             .limit(1);
 
 
@@ -683,6 +746,7 @@ async function cargarApunteDeHoy(
         mostrarMensaje(
             "No se pudo consultar el apunte de hoy."
         );
+
 
         return;
     }
@@ -719,8 +783,6 @@ async function cargarApunteDeHoy(
 
     /*
        NO EXISTE APUNTE DE HOY.
-
-       No creamos nada todavía.
     */
 
     iniciarNuevoApunteSinGuardar();
@@ -744,8 +806,10 @@ function iniciarNuevoApunteSinGuardar() {
     apunteActualId =
         null;
 
+
     fechaCreacionActual =
         new Date();
+
 
     nota.value =
         "";
@@ -838,6 +902,25 @@ function cargarApunteEnPantalla(
         materiaActual;
 
 
+    try {
+
+        localStorage.setItem(
+
+            STORAGE_ULTIMA_MATERIA,
+
+            materiaActual
+
+        );
+
+    } catch (error) {
+
+        console.error(
+            "No se pudo guardar la última materia:",
+            error
+        );
+    }
+
+
     cargandoApunte = false;
 
 
@@ -854,6 +937,7 @@ btnMateria.addEventListener(
     function(event) {
 
         event.stopPropagation();
+
 
         menuMateria.classList.toggle(
             "oculto"
@@ -891,9 +975,54 @@ nota.addEventListener(
         actualizarContador();
 
         guardarBorradorLocal();
+
     }
 );
 
+
+/* =========================================
+   EXPANDIR HORIZONTALMENTE
+   DOBLE CLIC
+   ========================================= */
+
+nota.addEventListener(
+    "dblclick",
+    function() {
+
+        if (
+            nota.classList.contains(
+                "textarea-expandido"
+            )
+        ) {
+
+            nota.classList.remove(
+                "textarea-expandido"
+            );
+
+            nota.style.height = "";
+
+        } else {
+
+            const altoActual =
+                nota.getBoundingClientRect().height;
+
+
+            nota.style.height =
+                altoActual + "px";
+
+
+            nota.classList.add(
+                "textarea-expandido"
+            );
+        }
+
+    }
+);
+
+
+/* =========================================
+   CONTADOR
+   ========================================= */
 
 function actualizarContador() {
 
@@ -909,21 +1038,13 @@ function actualizarContador() {
 
 function guardarBorradorLocal() {
 
-    /*
-       Mientras estamos cargando un apunte
-       no hacemos una copia.
-    */
-
-    if (cargandoApunte) {
+    if (
+        cargandoApunte
+    ) {
 
         return;
     }
 
-
-    /*
-       Si no hay materia,
-       no guardamos nada.
-    */
 
     if (
         materiaActual === ""
@@ -933,17 +1054,12 @@ function guardarBorradorLocal() {
     }
 
 
-    /*
-       Si no hay texto,
-       eliminamos cualquier borrador
-       de esta materia.
-    */
-
     if (
         nota.value.trim() === ""
     ) {
 
         eliminarBorradorLocal();
+
 
         return;
     }
@@ -965,18 +1081,25 @@ function guardarBorradorLocal() {
                 ? fechaCreacionActual.toISOString()
                 : new Date().toISOString(),
 
+        fechaDia:
+            obtenerFechaDia(),
+
         fechaBorrador:
             new Date().toISOString()
+
     };
 
 
     try {
 
         localStorage.setItem(
+
             STORAGE_BORRADOR,
+
             JSON.stringify(
                 borrador
             )
+
         );
 
 
@@ -1005,13 +1128,16 @@ function recuperarBorradorLocal(
 
     let borrador;
 
+
     try {
 
         borrador =
             JSON.parse(
+
                 localStorage.getItem(
                     STORAGE_BORRADOR
                 )
+
             );
 
     } catch (error) {
@@ -1028,13 +1154,22 @@ function recuperarBorradorLocal(
     }
 
 
+    if (
+        borrador.materia !== materia
+    ) {
+
+        return;
+    }
+
+
     /*
-       El borrador tiene que pertenecer
-       a la materia que estamos abriendo.
+       El borrador también debe ser
+       del día actual.
     */
 
     if (
-        borrador.materia !== materia
+        borrador.fechaDia &&
+        borrador.fechaDia !== obtenerFechaDia()
     ) {
 
         return;
@@ -1058,8 +1193,8 @@ function recuperarBorradorLocal(
 
 
     /*
-       Si ya existe un apunte en Supabase,
-       recuperamos el borrador solamente
+       Si existe un apunte en Supabase,
+       solamente recuperamos el borrador
        si es más nuevo.
     */
 
@@ -1083,14 +1218,15 @@ function recuperarBorradorLocal(
 
             eliminarBorradorLocal();
 
+
             return;
         }
     }
 
 
     /*
-       Si el borrador corresponde a otro
-       apunte anterior, no lo mezclamos.
+       Si corresponde a otro apunte,
+       no lo mezclamos.
     */
 
     if (
@@ -1102,10 +1238,6 @@ function recuperarBorradorLocal(
         return;
     }
 
-
-    /*
-       Recuperamos el texto.
-    */
 
     cargandoApunte = true;
 
@@ -1146,6 +1278,25 @@ function recuperarBorradorLocal(
         materiaActual;
 
 
+    try {
+
+        localStorage.setItem(
+
+            STORAGE_ULTIMA_MATERIA,
+
+            materiaActual
+
+        );
+
+    } catch (error) {
+
+        console.error(
+            "No se pudo guardar la última materia:",
+            error
+        );
+    }
+
+
     cargandoApunte = false;
 
 
@@ -1173,7 +1324,7 @@ function eliminarBorradorLocal() {
     } catch (error) {
 
         console.error(
-            "No se pudo eliminar el borrador:",
+            "No se pudo eliminar el borrador local:",
             error
         );
     }
@@ -1202,13 +1353,6 @@ async function guardarNota(
         nota.value.trim();
 
 
-    /*
-       REGLA FUNDAMENTAL:
-
-       Si no hay texto,
-       NO SE GUARDA NADA.
-    */
-
     if (
         texto === ""
     ) {
@@ -1225,14 +1369,10 @@ async function guardarNota(
             );
         }
 
+
         return false;
     }
 
-
-    /*
-       Si no hay materia,
-       tampoco guardamos.
-    */
 
     if (
         materiaActual === ""
@@ -1247,7 +1387,99 @@ async function guardarNota(
             );
         }
 
+
         return false;
+    }
+
+
+    const fechaDia =
+        obtenerFechaDia();
+
+
+    /* =====================================
+       SI NO TENEMOS ID:
+       BUSCAMOS NUEVAMENTE ANTES DE INSERTAR
+       ===================================== */
+
+    if (
+        !apunteActualId
+    ) {
+
+        const {
+            data: existente,
+            error: errorBusqueda
+        } =
+            await supabaseClient
+
+                .from("apuntes")
+
+                .select(
+                    "id, materia, fecha_dia, fecha_creacion, fecha_modificacion, contenido"
+                )
+
+                .eq(
+                    "materia",
+                    materiaActual
+                )
+
+                .eq(
+                    "fecha_dia",
+                    fechaDia
+                )
+
+                .limit(1);
+
+
+        if (
+            errorBusqueda
+        ) {
+
+            console.error(
+                "Error comprobando apunte existente:",
+                errorBusqueda
+            );
+
+
+            guardarBorradorLocal();
+
+
+            if (
+                !esAutomatico
+            ) {
+
+                mostrarMensaje(
+                    "No se pudo consultar Supabase. El borrador quedó guardado localmente."
+                );
+            }
+
+
+            return false;
+        }
+
+
+        /*
+           YA EXISTE.
+
+           Lo cargamos como apunte actual
+           y actualizamos ese registro.
+        */
+
+        if (
+            existente &&
+            existente.length > 0
+        ) {
+
+            apunteActualId =
+                existente[0].id;
+
+
+            fechaCreacionActual =
+                existente[0].fecha_creacion
+                    ? new Date(
+                        existente[0].fecha_creacion
+                    )
+                    : new Date();
+        }
     }
 
 
@@ -1264,13 +1496,21 @@ async function guardarNota(
             new Date();
 
 
-        const { data, error } =
+        const {
+            data,
+            error
+        } =
             await supabaseClient
+
                 .from("apuntes")
+
                 .insert({
 
                     materia:
                         materiaActual,
+
+                    fecha_dia:
+                        fechaDia,
 
                     fecha_creacion:
                         fechaCreacion.toISOString(),
@@ -1285,7 +1525,9 @@ async function guardarNota(
                         texto
 
                 })
+
                 .select()
+
                 .single();
 
 
@@ -1293,10 +1535,72 @@ async function guardarNota(
             error
         ) {
 
+            /*
+               Si Supabase rechazó el INSERT
+               porque otro proceso creó el apunte
+               exactamente al mismo tiempo,
+               buscamos el registro existente.
+            */
+
             console.error(
                 "Error al crear apunte:",
                 error
             );
+
+
+            const {
+                data: recuperado,
+                error: errorRecuperacion
+            } =
+                await supabaseClient
+
+                    .from("apuntes")
+
+                    .select(
+                        "id, materia, fecha_dia, fecha_creacion, fecha_modificacion, contenido"
+                    )
+
+                    .eq(
+                        "materia",
+                        materiaActual
+                    )
+
+                    .eq(
+                        "fecha_dia",
+                        fechaDia
+                    )
+
+                    .limit(1);
+
+
+            if (
+                !errorRecuperacion &&
+                recuperado &&
+                recuperado.length > 0
+            ) {
+
+                apunteActualId =
+                    recuperado[0].id;
+
+
+                fechaCreacionActual =
+                    recuperado[0].fecha_creacion
+                        ? new Date(
+                            recuperado[0].fecha_creacion
+                        )
+                        : new Date();
+
+
+                /*
+                   Ahora actualizamos
+                   el único apunte existente.
+                */
+
+                return await actualizarApunteExistente(
+                    texto,
+                    esAutomatico
+                );
+            }
 
 
             guardarBorradorLocal();
@@ -1317,7 +1621,7 @@ async function guardarNota(
 
 
         /*
-           Supabase confirmó el guardado.
+           Supabase confirmó el INSERT.
         */
 
         apunteActualId =
@@ -1325,9 +1629,11 @@ async function guardarNota(
 
 
         fechaCreacionActual =
-            new Date(
-                data.fecha_creacion
-            );
+            data.fecha_creacion
+                ? new Date(
+                    data.fecha_creacion
+                )
+                : fechaCreacion;
 
 
         eliminarBorradorLocal();
@@ -1356,17 +1662,40 @@ async function guardarNota(
        ACTUALIZAR APUNTE EXISTENTE
        ===================================== */
 
+    return await actualizarApunteExistente(
+        texto,
+        esAutomatico
+    );
+}
+
+
+/* =========================================
+   ACTUALIZAR APUNTE EXISTENTE
+   ========================================= */
+
+async function actualizarApunteExistente(
+    texto,
+    esAutomatico
+) {
+
     const ahora =
         new Date();
 
 
-    const { error } =
+    const {
+        error
+    } =
         await supabaseClient
+
             .from("apuntes")
+
             .update({
 
                 materia:
                     materiaActual,
+
+                fecha_dia:
+                    obtenerFechaDia(),
 
                 fecha_modificacion:
                     ahora.toISOString(),
@@ -1378,6 +1707,7 @@ async function guardarNota(
                     texto
 
             })
+
             .eq(
                 "id",
                 apunteActualId
@@ -1410,10 +1740,6 @@ async function guardarNota(
         return false;
     }
 
-
-    /*
-       Supabase confirmó la actualización.
-    */
 
     eliminarBorradorLocal();
 
@@ -1550,12 +1876,18 @@ async function abrirApuntesAnteriores() {
     );
 
 
-    const { data, error } =
+    const {
+        data,
+        error
+    } =
         await supabaseClient
+
             .from("apuntes")
+
             .select(
-                "id, materia, fecha_creacion, fecha_modificacion, titulo, contenido"
+                "id, materia, fecha_dia, fecha_creacion, fecha_modificacion, titulo, contenido"
             )
+
             .order(
                 "fecha_creacion",
                 {
@@ -1577,6 +1909,7 @@ async function abrirApuntesAnteriores() {
         mostrarMensaje(
             "Error al buscar apuntes."
         );
+
 
         return;
     }
@@ -1615,8 +1948,10 @@ function mostrarListaApuntes(
             "div"
         );
 
+
     modal.id =
         "modalApuntes";
+
 
     modal.className =
         "modal";
@@ -1626,6 +1961,7 @@ function mostrarListaApuntes(
         document.createElement(
             "div"
         );
+
 
     contenido.className =
         "modal-contenido";
@@ -1640,6 +1976,7 @@ function mostrarListaApuntes(
             "div"
         );
 
+
     encabezado.className =
         "modal-header";
 
@@ -1648,6 +1985,7 @@ function mostrarListaApuntes(
         document.createElement(
             "h2"
         );
+
 
     titulo.textContent =
         "MIS APUNTES";
@@ -1658,11 +1996,14 @@ function mostrarListaApuntes(
             "button"
         );
 
+
     cerrar.className =
         "btn-cerrar";
 
+
     cerrar.textContent =
         "×";
+
 
     cerrar.title =
         "Cerrar";
@@ -1684,9 +2025,11 @@ function mostrarListaApuntes(
         titulo
     );
 
+
     encabezado.appendChild(
         cerrar
     );
+
 
     contenido.appendChild(
         encabezado
@@ -1706,14 +2049,18 @@ function mostrarListaApuntes(
                 "p"
             );
 
+
         vacio.textContent =
             "Todavía no hay apuntes guardados.";
+
 
         vacio.style.color =
             "#9ca3af";
 
+
         vacio.style.textAlign =
             "center";
+
 
         vacio.style.padding =
             "30px 10px";
@@ -1745,26 +2092,34 @@ function mostrarListaApuntes(
             item.style.width =
                 "100%";
 
+
             item.style.textAlign =
                 "left";
+
 
             item.style.padding =
                 "13px";
 
+
             item.style.marginBottom =
                 "8px";
+
 
             item.style.border =
                 "1px solid #1f2937";
 
+
             item.style.borderRadius =
                 "10px";
+
 
             item.style.background =
                 "#030712";
 
+
             item.style.color =
                 "#e5e7eb";
+
 
             item.style.cursor =
                 "pointer";
@@ -1779,8 +2134,10 @@ function mostrarListaApuntes(
             materia.textContent =
                 apunte.materia;
 
+
             materia.style.fontWeight =
                 "700";
+
 
             materia.style.fontSize =
                 "14px";
@@ -1797,11 +2154,14 @@ function mostrarListaApuntes(
                     apunte.fecha_creacion
                 );
 
+
             fechaApunte.style.color =
                 "#9ca3af";
 
+
             fechaApunte.style.fontSize =
                 "12px";
+
 
             fechaApunte.style.marginTop =
                 "4px";
@@ -1817,11 +2177,14 @@ function mostrarListaApuntes(
                 apunte.titulo ||
                 "Apunte";
 
+
             tituloApunte.style.color =
                 "#d1d5db";
 
+
             tituloApunte.style.fontSize =
                 "13px";
+
 
             tituloApunte.style.marginTop =
                 "3px";
@@ -1831,9 +2194,11 @@ function mostrarListaApuntes(
                 materia
             );
 
+
             item.appendChild(
                 fechaApunte
             );
+
 
             item.appendChild(
                 tituloApunte
@@ -1848,6 +2213,7 @@ function mostrarListaApuntes(
                         apunte
                     );
 
+
                     modal.remove();
 
                 }
@@ -1857,6 +2223,7 @@ function mostrarListaApuntes(
             contenido.appendChild(
                 item
             );
+
         }
     );
 
@@ -1873,6 +2240,7 @@ function mostrarListaApuntes(
 
     botonCerrar.className =
         "btn-modal-cerrar";
+
 
     botonCerrar.textContent =
         "CERRAR";
@@ -1939,13 +2307,21 @@ function formatearFechaApunte(
 
 
     return fecha.toLocaleDateString(
+
         "es-AR",
+
         {
+
             weekday: "short",
+
             day: "2-digit",
+
             month: "2-digit",
+
             year: "numeric"
+
         }
+
     );
 }
 
@@ -1960,6 +2336,11 @@ function cargarApunteAnterior(
 
     cargandoApunte = true;
 
+
+    /*
+       Guardamos el apunte actual
+       antes de cambiar al anterior.
+    */
 
     apunteActualId =
         apunte.id;
@@ -1995,6 +2376,25 @@ function cargarApunteAnterior(
     estado.textContent =
         "Apunte anterior · " +
         materiaActual;
+
+
+    try {
+
+        localStorage.setItem(
+
+            STORAGE_ULTIMA_MATERIA,
+
+            materiaActual
+
+        );
+
+    } catch (error) {
+
+        console.error(
+            "No se pudo guardar la última materia:",
+            error
+        );
+    }
 
 
     cargandoApunte = false;
@@ -2038,41 +2438,54 @@ function crearBotonVolverActual() {
     boton.style.position =
         "fixed";
 
+
     boton.style.bottom =
         "85px";
+
 
     boton.style.left =
         "50%";
 
+
     boton.style.transform =
         "translateX(-50%)";
+
 
     boton.style.zIndex =
         "200";
 
+
     boton.style.height =
         "42px";
+
 
     boton.style.padding =
         "0 16px";
 
+
     boton.style.border =
         "1px solid #374151";
+
 
     boton.style.borderRadius =
         "10px";
 
+
     boton.style.background =
         "#111827";
+
 
     boton.style.color =
         "#e5e7eb";
 
+
     boton.style.fontSize =
         "12px";
 
+
     boton.style.fontWeight =
         "700";
+
 
     boton.style.cursor =
         "pointer";
@@ -2138,24 +2551,30 @@ async function volverAlContexto() {
 
     /*
        Si el apunte actual ya tenía ID,
-       buscamos la versión más reciente
-       en Supabase.
+       recuperamos su versión actual.
     */
 
     if (
         contexto.id
     ) {
 
-        const { data, error } =
+        const {
+            data,
+            error
+        } =
             await supabaseClient
+
                 .from("apuntes")
+
                 .select(
-                    "id, materia, fecha_creacion, contenido"
+                    "id, materia, fecha_dia, fecha_creacion, contenido"
                 )
+
                 .eq(
                     "id",
                     contexto.id
                 )
+
                 .single();
 
 
@@ -2167,8 +2586,10 @@ async function volverAlContexto() {
             apunteActualId =
                 data.id;
 
+
             materiaActual =
                 data.materia;
+
 
             fechaCreacionActual =
                 data.fecha_creacion
@@ -2202,12 +2623,32 @@ async function volverAlContexto() {
                 null;
 
 
+            try {
+
+                localStorage.setItem(
+
+                    STORAGE_ULTIMA_MATERIA,
+
+                    materiaActual
+
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "No se pudo guardar la última materia:",
+                    error
+                );
+            }
+
+
             mostrarMensaje(
                 "↩ Volviste al apunte actual"
             );
 
 
             nota.focus();
+
 
             return;
         }
@@ -2257,6 +2698,25 @@ async function volverAlContexto() {
 
     contextoApunteActual =
         null;
+
+
+    try {
+
+        localStorage.setItem(
+
+            STORAGE_ULTIMA_MATERIA,
+
+            materiaActual
+
+        );
+
+    } catch (error) {
+
+        console.error(
+            "No se pudo guardar la última materia:",
+            error
+        );
+    }
 
 
     mostrarMensaje(
@@ -2349,6 +2809,7 @@ function mostrarMateriasConfiguracion(
             nombre.className =
                 "materia-nombre";
 
+
             nombre.textContent =
                 materia;
 
@@ -2372,8 +2833,10 @@ function mostrarMateriasConfiguracion(
             editar.type =
                 "button";
 
+
             editar.textContent =
                 "✏";
+
 
             editar.title =
                 "Editar materia";
@@ -2400,8 +2863,10 @@ function mostrarMateriasConfiguracion(
             eliminar.type =
                 "button";
 
+
             eliminar.textContent =
                 "×";
+
 
             eliminar.title =
                 "Eliminar materia";
@@ -2423,6 +2888,7 @@ function mostrarMateriasConfiguracion(
                 editar
             );
 
+
             acciones.appendChild(
                 eliminar
             );
@@ -2432,6 +2898,7 @@ function mostrarMateriasConfiguracion(
                 nombre
             );
 
+
             fila.appendChild(
                 acciones
             );
@@ -2440,6 +2907,7 @@ function mostrarMateriasConfiguracion(
             listaMaterias.appendChild(
                 fila
             );
+
         }
     );
 }
@@ -2506,6 +2974,7 @@ function agregarMateria() {
         alert(
             "Esa materia ya existe."
         );
+
 
         return;
     }
@@ -2587,8 +3056,11 @@ function editarMateria(
             ) {
 
                 return (
+
                     i !== indice &&
+
                     materia === nombre
+
                 );
 
             }
@@ -2602,6 +3074,7 @@ function editarMateria(
         alert(
             "Esa materia ya existe."
         );
+
 
         return;
     }
@@ -2631,6 +3104,25 @@ function editarMateria(
         estado.textContent =
             "Apunte actual · " +
             nombre;
+
+
+        try {
+
+            localStorage.setItem(
+
+                STORAGE_ULTIMA_MATERIA,
+
+                nombre
+
+            );
+
+        } catch (error) {
+
+            console.error(
+                "No se pudo guardar la última materia:",
+                error
+            );
+        }
     }
 
 
@@ -2662,6 +3154,7 @@ function eliminarMateria(
         alert(
             "Debe quedar al menos una materia."
         );
+
 
         return;
     }
@@ -2705,11 +3198,14 @@ function eliminarMateria(
         materiaActual =
             "";
 
+
         apunteActualId =
             null;
 
+
         fechaCreacionActual =
             null;
+
 
         nota.value =
             "";
@@ -2734,6 +3230,21 @@ function eliminarMateria(
 
 
         eliminarBorradorLocal();
+
+
+        try {
+
+            localStorage.removeItem(
+                STORAGE_ULTIMA_MATERIA
+            );
+
+        } catch (error) {
+
+            console.error(
+                "No se pudo eliminar la última materia:",
+                error
+            );
+        }
     }
 
 
@@ -2755,12 +3266,11 @@ window.addEventListener(
     function() {
 
         /*
-           No intentamos hacer una petición
-           a Supabase aquí.
+           No hacemos peticiones a Supabase
+           al cerrar la página.
 
-           Dejamos el texto guardado localmente,
-           que es mucho más seguro ante un
-           cierre abrupto.
+           El borrador local queda como
+           copia de seguridad.
         */
 
         if (
@@ -2769,6 +3279,30 @@ window.addEventListener(
         ) {
 
             guardarBorradorLocal();
+        }
+
+
+        if (
+            materiaActual !== ""
+        ) {
+
+            try {
+
+                localStorage.setItem(
+
+                    STORAGE_ULTIMA_MATERIA,
+
+                    materiaActual
+
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "No se pudo guardar la última materia:",
+                    error
+                );
+            }
         }
     }
 );

@@ -1,10 +1,16 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Facu Apuntes</title>
+
+    <link
+        rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚖️</text></svg>"
+    >
 
     <link rel="stylesheet" href="style.css">
 </head>
@@ -14,7 +20,6 @@
     <div class="app">
 
         <!-- ENCABEZADO -->
-
         <header class="header">
 
             <div class="header-top">
@@ -23,44 +28,48 @@
 
                 <button
                     id="btnMateria"
-                    class="btn-materia">
+                    class="btn-materia"
+                    type="button"
+                >
                     MATERIA ▼
                 </button>
 
             </div>
 
             <!-- FECHA Y MATERIA -->
-
             <div class="segunda-linea">
 
-                <div id="fecha" class="fecha"></div>
+                <div
+                    id="fecha"
+                    class="fecha"
+                ></div>
 
                 <div
                     id="materiaSeleccionada"
-                    class="materia-seleccionada">
+                    class="materia-seleccionada"
+                >
                     Seleccionar
                 </div>
 
             </div>
 
             <!-- MENÚ DE MATERIAS -->
-
             <div
                 id="menuMateria"
-                class="menu-materia oculto">
-            </div>
+                class="menu-materia oculto"
+            ></div>
 
         </header>
 
 
         <!-- ÁREA DE ESCRITURA -->
-
         <main class="contenido">
 
             <textarea
                 id="nota"
                 placeholder="Escribí acá tus apuntes..."
-                spellcheck="true"></textarea>
+                spellcheck="true"
+            ></textarea>
 
             <div class="informacion">
 
@@ -77,50 +86,56 @@
         </main>
 
 
- <!-- BOTONES -->
+        <!-- BOTONES -->
+        <div class="botones">
 
-<div class="botones">
+            <button
+                id="btnCompartir"
+                class="btn btn-herramienta"
+                type="button"
+            >
+                COMPARTIR
+            </button>
 
-    <button
-        id="btnCompartir"
-        class="btn btn-herramienta">
-        ↗ COMPARTIR
-    </button>
+            <button
+                id="btnTexto"
+                class="btn btn-herramienta"
+                type="button"
+            >
+                CÓDIGOS
+            </button>
 
-    <button
-        id="btnResaltador"
-        class="btn btn-herramienta">
-        🖍 RESALTADOR
-    </button>
+            <button
+                id="btnIA"
+                class="btn btn-herramienta"
+                type="button"
+            >
+                IA
+            </button>
 
-    <button
-        id="btnIA"
-        class="btn btn-herramienta">
-        IA
-    </button>
+            <button
+                id="btnGuardar"
+                class="btn btn-guardar"
+                type="button"
+            >
+                GUARDAR
+            </button>
 
-    <button
-        id="btnGuardar"
-        class="btn btn-guardar">
-        GUARDAR
-    </button>
-
-</div>
-
-
-        <!-- MENSAJE -->
-
-        <div
-            id="mensaje"
-            class="mensaje">
         </div>
 
 
-        <!-- CONFIGURACIÓN -->
+        <!-- MENSAJE -->
+        <div
+            id="mensaje"
+            class="mensaje"
+        ></div>
 
+
+        <!-- CONFIGURACIÓN -->
         <div
             id="modalConfiguracion"
-            class="modal oculto">
+            class="modal oculto"
+        >
 
             <div class="modal-contenido">
 
@@ -130,7 +145,9 @@
 
                     <button
                         id="btnCerrarConfiguracion"
-                        class="btn-cerrar">
+                        class="btn-cerrar"
+                        type="button"
+                    >
                         ×
                     </button>
 
@@ -140,18 +157,21 @@
 
                 <div
                     id="listaMaterias"
-                    class="lista-materias">
-                </div>
+                    class="lista-materias"
+                ></div>
 
                 <div class="agregar-materia">
 
                     <input
                         type="text"
                         id="nuevaMateria"
-                        placeholder="Nueva materia">
+                        placeholder="Nueva materia"
+                    >
 
                     <button
-                        id="btnAgregarMateria">
+                        id="btnAgregarMateria"
+                        type="button"
+                    >
                         ＋ AGREGAR
                     </button>
 
@@ -159,7 +179,9 @@
 
                 <button
                     id="btnCerrarModal"
-                    class="btn-modal-cerrar">
+                    class="btn-modal-cerrar"
+                    type="button"
+                >
                     CERRAR
                 </button>
 
@@ -198,9 +220,12 @@
     </script>
 
 
-    <!-- PROGRAMA PRINCIPAL -->
+    <!-- =========================================
+         PROGRAMA PRINCIPAL
+         ========================================= -->
 
     <script src="script.js"></script>
 
 </body>
+
 </html>

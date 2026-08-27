@@ -1,5 +1,5 @@
 /* =========================================
-   DERECHO UBA
+   FACU-APUNTES
    ESTILOS PRINCIPALES
    ========================================= */
 
@@ -9,27 +9,19 @@
     padding: 0;
 }
 
-
 html,
 body {
     width: 100%;
     height: 100%;
-    margin: 0;
-    padding: 0;
 }
-
 
 body {
     font-family: Inter, Arial, sans-serif;
-
     background: #030712;
-
     color: #e5e7eb;
-
     overflow: hidden;
 
     display: flex;
-
     justify-content: center;
 }
 
@@ -40,15 +32,11 @@ body {
 
 .app {
     width: 100%;
-
     max-width: 720px;
-
     height: 100dvh;
-
     min-height: 0;
 
     display: flex;
-
     flex-direction: column;
 
     padding: 18px;
@@ -61,65 +49,49 @@ body {
 
 .header {
     position: relative;
-
     padding-bottom: 15px;
+    flex-shrink: 0;
 }
-
 
 .header-top {
     display: flex;
-
     align-items: center;
-
     justify-content: space-between;
 
     gap: 12px;
 }
 
-
 .header h1 {
     font-size: 23px;
-
     font-weight: 700;
-
     letter-spacing: 0.6px;
-
     white-space: nowrap;
 }
 
 
 /* =========================================
-   SEGUNDA LÍNEA
    FECHA + MATERIA
    ========================================= */
 
 .segunda-linea {
     display: flex;
-
     justify-content: space-between;
-
     align-items: flex-start;
 
     margin-top: 5px;
-
     padding: 0 2px;
 }
 
-
 .fecha {
     color: #9ca3af;
-
     font-size: 13px;
-
     text-transform: capitalize;
 }
-
 
 .materia-seleccionada {
     color: #9ca3af;
 
     font-size: 12px;
-
     font-weight: 600;
 
     text-align: right;
@@ -127,9 +99,7 @@ body {
     max-width: 180px;
 
     white-space: nowrap;
-
     overflow: hidden;
-
     text-overflow: ellipsis;
 }
 
@@ -140,37 +110,29 @@ body {
 
 .btn-materia {
     min-width: 0;
-
     width: auto;
-
     height: auto;
 
     padding: 2px 0;
 
-    border: none !important;
-
+    border: none;
     outline: none;
-
     border-radius: 0;
 
-    background: transparent !important;
+    background: transparent;
 
     color: #9ca3af;
 
     font-size: 13px;
-
     font-weight: 600;
 
     cursor: pointer;
 }
 
-
 .btn-materia:hover {
-    background: transparent !important;
-
+    background: transparent;
     color: #ffffff;
 }
-
 
 .btn-materia:active {
     transform: none;
@@ -178,14 +140,13 @@ body {
 
 
 /* =========================================
-   MENÚ DESPLEGABLE
+   MENÚ DE MATERIAS
    ========================================= */
 
 .menu-materia {
     position: absolute;
 
     top: 52px;
-
     right: 0;
 
     width: 210px;
@@ -193,7 +154,6 @@ body {
     background: #111827;
 
     border: 1px solid #374151;
-
     border-radius: 12px;
 
     padding: 7px;
@@ -204,14 +164,11 @@ body {
     z-index: 50;
 }
 
-
 .menu-materia button {
     width: 100%;
-
     height: 42px;
 
     border: none;
-
     border-radius: 8px;
 
     background: transparent;
@@ -223,17 +180,14 @@ body {
     padding: 0 12px;
 
     font-size: 13px;
-
     font-weight: 600;
 
     cursor: pointer;
 }
 
-
 .menu-materia button:hover {
     background: #1f2937;
 }
-
 
 .separador {
     height: 1px;
@@ -242,7 +196,6 @@ body {
 
     margin: 6px 4px;
 }
-
 
 .btn-configuracion {
     color: #9ca3af !important;
@@ -264,40 +217,12 @@ body {
 
 .contenido {
     flex: 1;
-
     min-height: 0;
 
     display: flex;
-
     flex-direction: column;
 
     width: 100%;
-
-    transition:
-        width 0.2s ease,
-        margin 0.2s ease;
-}
-
-
-/* =========================================
-   ÁREA DE ESCRITURA EXPANDIDA
-   SOLAMENTE EL TEXTAREA / CONTENIDO
-   ========================================= */
-
-.contenido-expandido {
-    width: 100vw;
-
-    margin-left: calc(
-        (100% - 100vw) / 2
-    );
-
-    margin-right: calc(
-        (100% - 100vw) / 2
-    );
-
-    padding-left: 18px;
-
-    padding-right: 18px;
 }
 
 
@@ -307,43 +232,76 @@ body {
 
 textarea {
     width: 100%;
-
     flex: 1;
-
     min-height: 0;
 
     resize: none;
-
     outline: none;
 
     border: 1px solid #1f2937;
-
     border-radius: 16px;
 
     background: #111827;
-
     color: #f9fafb;
 
     padding: 19px;
 
     font-family: Inter, Arial, sans-serif;
-
     font-size: 17px;
-
     line-height: 1.6;
 
     box-shadow:
         0 8px 30px rgba(0, 0, 0, 0.25);
-}
 
+    transition:
+        width 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+        margin-left 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+        margin-right 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
 
 textarea:focus {
     border-color: #374151;
 }
 
-
 textarea::placeholder {
     color: #6b7280;
+}
+
+
+/* =========================================
+   TEXTAREA EXPANDIDO
+   =========================================
+
+   DOBLE CLIC:
+
+   - Mantiene exactamente el mismo alto.
+   - Ocupa todo el ancho de la pantalla.
+   - Se expande tanto hacia la izquierda
+     como hacia la derecha.
+   ========================================= */
+
+textarea.textarea-expandido {
+    width: 100vw;
+
+    /*
+       El textarea normalmente mide
+       el ancho disponible dentro de .app.
+
+       Este cálculo desplaza el elemento
+       hacia la izquierda exactamente
+       lo necesario para centrarlo
+       respecto de la ventana.
+    */
+
+    margin-left: calc((100% - 100vw) / 2);
+
+    /*
+       El margen derecho compensa también
+       la expansión para que no quede
+       desplazado hacia un solo lado.
+    */
+
+    margin-right: calc((100% - 100vw) / 2);
 }
 
 
@@ -355,13 +313,11 @@ textarea::placeholder {
     display: flex;
 
     justify-content: space-between;
-
     align-items: center;
 
     padding: 9px 4px;
 
     color: #6b7280;
-
     font-size: 12px;
 
     flex-shrink: 0;
@@ -377,53 +333,85 @@ textarea::placeholder {
 
     gap: 10px;
 
+    width: 100%;
+
     padding-top: 4px;
 
     flex-shrink: 0;
 }
 
-
 .btn {
+    flex: 1;
+
+    min-width: 0;
+    width: 0;
+
     height: 52px;
 
     border: none;
-
     border-radius: 12px;
 
     cursor: pointer;
 
-    font-size: 14px;
-
+    font-size: 13px;
     font-weight: 700;
 
     transition:
         transform 0.1s ease,
         opacity 0.1s ease;
-}
 
+    background: #374151;
+    color: #ffffff;
+}
 
 .btn:active {
     transform: scale(0.97);
 }
 
 
-.btn-nuevo {
-    flex: 1;
+/* =========================================
+   BOTONES HERRAMIENTA
+   ========================================= */
 
+.btn-herramienta {
     background: #374151;
-
     color: #ffffff;
 }
 
+
+/* =========================================
+   CÓDIGOS
+   ========================================= */
+
+#btnTexto {
+    background: #374151;
+    color: #ffffff;
+}
+
+
+/* =========================================
+   IA
+   ========================================= */
+
+#btnIA {
+    background: #374151;
+    color: #ffffff;
+}
+
+
+/* =========================================
+   GUARDAR
+   ========================================= */
 
 .btn-guardar {
-    flex: 1;
-
     background: #1e40af;
-
     color: #ffffff;
 }
 
+
+/* =========================================
+   HOVER BOTONES
+   ========================================= */
 
 .btn:hover {
     opacity: 0.9;
@@ -455,7 +443,6 @@ textarea::placeholder {
 
 .modal {
     position: fixed;
-
     inset: 0;
 
     background: rgba(0, 0, 0, 0.7);
@@ -463,7 +450,6 @@ textarea::placeholder {
     display: flex;
 
     justify-content: center;
-
     align-items: center;
 
     padding: 18px;
@@ -471,12 +457,9 @@ textarea::placeholder {
     z-index: 100;
 }
 
-
 .modal-contenido {
     width: 100%;
-
     max-width: 450px;
-
     max-height: 90vh;
 
     overflow-y: auto;
@@ -484,7 +467,6 @@ textarea::placeholder {
     background: #111827;
 
     border: 1px solid #374151;
-
     border-radius: 18px;
 
     padding: 20px;
@@ -493,30 +475,24 @@ textarea::placeholder {
         0 20px 50px rgba(0, 0, 0, 0.5);
 }
 
-
 .modal-header {
     display: flex;
 
     justify-content: space-between;
-
     align-items: center;
 
     margin-bottom: 20px;
 }
 
-
 .modal-header h2 {
     font-size: 18px;
 }
 
-
 .btn-cerrar {
     width: 38px;
-
     height: 38px;
 
     border: none;
-
     border-radius: 50%;
 
     background: #374151;
@@ -527,7 +503,6 @@ textarea::placeholder {
 
     cursor: pointer;
 }
-
 
 .modal-contenido h3 {
     margin-bottom: 10px;
@@ -544,7 +519,6 @@ textarea::placeholder {
 
 .lista-materias {
     display: flex;
-
     flex-direction: column;
 
     gap: 7px;
@@ -552,12 +526,10 @@ textarea::placeholder {
     margin-bottom: 15px;
 }
 
-
 .materia-item {
     display: flex;
 
     align-items: center;
-
     justify-content: space-between;
 
     min-height: 45px;
@@ -571,13 +543,10 @@ textarea::placeholder {
     border: 1px solid #1f2937;
 }
 
-
 .materia-nombre {
     font-size: 14px;
-
     font-weight: 600;
 }
-
 
 .materia-acciones {
     display: flex;
@@ -585,14 +554,11 @@ textarea::placeholder {
     gap: 6px;
 }
 
-
 .materia-acciones button {
     width: 34px;
-
     height: 34px;
 
     border: none;
-
     border-radius: 8px;
 
     background: #1f2937;
@@ -601,7 +567,6 @@ textarea::placeholder {
 
     cursor: pointer;
 }
-
 
 .materia-acciones button:hover {
     background: #374151;
@@ -620,10 +585,8 @@ textarea::placeholder {
     margin-top: 10px;
 }
 
-
 .agregar-materia input {
     flex: 1;
-
     min-width: 0;
 
     height: 44px;
@@ -631,23 +594,19 @@ textarea::placeholder {
     padding: 0 12px;
 
     border: 1px solid #374151;
-
     border-radius: 9px;
 
     outline: none;
 
     background: #030712;
-
     color: #ffffff;
 
     font-size: 14px;
 }
 
-
 .agregar-materia input:focus {
     border-color: #4b5563;
 }
-
 
 .agregar-materia button {
     height: 44px;
@@ -655,15 +614,12 @@ textarea::placeholder {
     padding: 0 13px;
 
     border: none;
-
     border-radius: 9px;
 
     background: #374151;
-
     color: white;
 
     font-size: 12px;
-
     font-weight: 700;
 
     cursor: pointer;
@@ -682,15 +638,12 @@ textarea::placeholder {
     margin-top: 18px;
 
     border: none;
-
     border-radius: 11px;
 
     background: #1e3a8a;
-
     color: #ffffff;
 
     font-size: 13px;
-
     font-weight: 700;
 
     cursor: pointer;
@@ -703,22 +656,9 @@ textarea::placeholder {
 
 @media (max-width: 500px) {
 
-    html,
-    body {
-        width: 100%;
-
-        height: 100%;
-
-        overflow: hidden;
-    }
-
-
     .app {
         width: 100%;
-
         height: 100dvh;
-
-        min-height: 0;
 
         padding: 12px;
     }
@@ -730,12 +670,6 @@ textarea::placeholder {
 
 
     .btn-materia {
-        min-width: 0;
-
-        height: auto;
-
-        padding: 2px 0;
-
         font-size: 12px;
     }
 
@@ -752,69 +686,40 @@ textarea::placeholder {
 
     .materia-seleccionada {
         font-size: 11px;
-
         max-width: 150px;
     }
 
 
-    .contenido {
-        min-height: 0;
-
-        width: 100%;
-    }
-
-
-    /*
-       En celular la expansión utiliza
-       todo el ancho disponible del teléfono,
-       pero NO toca encabezado ni botones.
-    */
-
-    .contenido-expandido {
-        width: calc(100% + 24px);
-
-        margin-left: -12px;
-
-        margin-right: -12px;
-
-        padding-left: 12px;
-
-        padding-right: 12px;
-    }
-
-
     textarea {
-        min-height: 0;
-
-        height: auto;
-
         padding: 17px;
-
         font-size: 17px;
-
         border-radius: 15px;
     }
 
 
-    .informacion {
-        flex-shrink: 0;
-    }
+    /* -----------------------------------------
+       EXPANSIÓN HORIZONTAL EN CELULAR
+       ----------------------------------------- */
 
+    textarea.textarea-expandido {
+        width: 100vw;
 
-    .botones {
-        flex-shrink: 0;
+        /*
+           La app tiene 12px de padding
+           a cada lado.
+
+           Salimos exactamente de ese padding.
+        */
+
+        margin-left: -12px;
+
+        margin-right: -12px;
     }
 
 
     .btn {
         height: 54px;
-
         font-size: 13px;
-    }
-
-
-    .mensaje {
-        flex-shrink: 0;
     }
 
 
@@ -823,105 +728,15 @@ textarea::placeholder {
     }
 }
 
+
 /* =========================================
-   BOTONES PRINCIPALES
+   MODO ESCRITURA
    ========================================= */
 
-.botones {
-    display: flex;
+body.modo-escritura .app {
+    max-width: 720px;
+}
 
-    gap: 10px;
-
+body.modo-escritura .contenido {
     width: 100%;
-
-    padding-top: 4px;
-
-    flex-shrink: 0;
-}
-
-
-.btn {
-    flex: 1;
-
-    min-width: 0;
-
-    width: 0;
-
-    height: 52px;
-
-    border: none;
-
-    border-radius: 12px;
-
-    cursor: pointer;
-
-    font-size: 13px;
-
-    font-weight: 700;
-
-    transition:
-        transform 0.1s ease,
-        opacity 0.1s ease;
-
-    background: #374151;
-
-    color: #ffffff;
-}
-
-
-.btn:active {
-    transform: scale(0.97);
-}
-
-
-/* =========================================
-   COMPARTIR
-   ========================================= */
-
-.btn-herramienta {
-    background: #374151;
-
-    color: #ffffff;
-}
-
-
-/* =========================================
-   RESALTADOR
-   ========================================= */
-
-#btnResaltador {
-    background: #374151;
-
-    color: #ffffff;
-}
-
-
-/* =========================================
-   IA
-   ========================================= */
-
-#btnIA {
-    background: #374151;
-
-    color: #ffffff;
-}
-
-
-/* =========================================
-   GUARDAR
-   ========================================= */
-
-.btn-guardar {
-    background: #1e40af;
-
-    color: #ffffff;
-}
-
-
-/* =========================================
-   HOVER
-   ========================================= */
-
-.btn:hover {
-    opacity: 0.9;
 }
