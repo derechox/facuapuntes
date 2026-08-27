@@ -1,82 +1,83 @@
 /* =========================================
-   FACU-APUNTES v0.5
-   SUPABASE + APUNTES ANTERIORES
-   + APUNTE DEL DÍA POR MATERIA
-   + VOLVER AL APUNTE ACTUAL
-   + AUTOGUARDADO
-   + EXPANSIÓN DEL ÁREA DE ESCRITURA
-   ========================================= */
+FACU-APUNTES
+SUPABASE + APUNTES ANTERIORES
 
+* APUNTE DEL DÍA POR MATERIA
+* VOLVER AL APUNTE ACTUAL
+* AUTOGUARDADO
+* COPIA LOCAL DE SEGURIDAD
+  ========================================= */
 
 /* =========================================
-   CONFIGURACIÓN
-   ========================================= */
+CONFIGURACIÓN
+========================================= */
 
 const MATERIAS_POR_DEFECTO = [
-    "COMERCIAL",
-    "CONTRATOS",
-    "PROCESAL"
+"COMERCIAL",
+"CONTRATOS",
+"PROCESAL"
 ];
 
 const STORAGE_MATERIAS = "derecho_uba_materias";
 
+const STORAGE_BORRADOR =
+"facu_apuntes_borrador_actual";
 
 /* =========================================
-   ELEMENTOS HTML
-   ========================================= */
+ELEMENTOS HTML
+========================================= */
 
 const btnMateria =
-    document.getElementById("btnMateria");
+document.getElementById("btnMateria");
 
 const menuMateria =
-    document.getElementById("menuMateria");
+document.getElementById("menuMateria");
 
 const fecha =
-    document.getElementById("fecha");
+document.getElementById("fecha");
 
 const materiaSeleccionada =
-    document.getElementById("materiaSeleccionada");
+document.getElementById("materiaSeleccionada");
 
 const nota =
-    document.getElementById("nota");
+document.getElementById("nota");
 
 const contador =
-    document.getElementById("contador");
+document.getElementById("contador");
 
 const estado =
-    document.getElementById("estado");
+document.getElementById("estado");
 
 const mensaje =
-    document.getElementById("mensaje");
+document.getElementById("mensaje");
 
 const btnNuevo =
-    document.getElementById("btnNuevo");
+document.getElementById("btnNuevo");
 
 const btnGuardar =
-    document.getElementById("btnGuardar");
+document.getElementById("btnGuardar");
 
 const modalConfiguracion =
-    document.getElementById("modalConfiguracion");
+document.getElementById("modalConfiguracion");
 
 const btnCerrarConfiguracion =
-    document.getElementById("btnCerrarConfiguracion");
+document.getElementById("btnCerrarConfiguracion");
 
 const btnCerrarModal =
-    document.getElementById("btnCerrarModal");
+document.getElementById("btnCerrarModal");
 
 const listaMaterias =
-    document.getElementById("listaMaterias");
+document.getElementById("listaMaterias");
 
 const nuevaMateria =
-    document.getElementById("nuevaMateria");
+document.getElementById("nuevaMateria");
 
 const btnAgregarMateria =
-    document.getElementById("btnAgregarMateria");
-
+document.getElementById("btnAgregarMateria");
 
 /* =========================================
-   ESTADO ACTUAL
-   ========================================= */
+ESTADO ACTUAL
+========================================= */
 
 let materiaActual = "";
 
@@ -86,740 +87,1134 @@ let fechaCreacionActual = null;
 
 let guardadoAutomatico = null;
 
-
-/*
-   Guarda el apunte que estaba abierto
-   antes de entrar a "Apuntes anteriores".
-*/
-
 let contextoApunteActual = null;
 
+/*
+Evita guardar una copia local mientras
+estamos cargando un apunte desde Supabase.
+*/
+
+let cargandoApunte = false;
 
 /* =========================================
-   INICIO
-   ========================================= */
+INICIO
+========================================= */
 
 iniciar();
 
-
 async function iniciar() {
 
-    cargarMaterias();
+```
+cargarMaterias();
 
-    actualizarFecha();
+actualizarFecha();
 
-    actualizarContador();
+actualizarContador();
 
-    iniciarGuardadoAutomatico();
+iniciarGuardadoAutomatico();
 
-    iniciarExpansionEscritura();
+console.log(
+    "Facu Apuntes iniciado."
+);
+```
 
-    console.log("Facu Apuntes iniciado.");
 }
 
-
 /* =========================================
-   FECHA
-   ========================================= */
+FECHA
+========================================= */
 
 function actualizarFecha() {
 
-    const ahora = new Date();
+```
+const ahora = new Date();
 
-    const opciones = {
-        weekday: "long",
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric"
-    };
+const opciones = {
+    weekday: "long",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric"
+};
 
-    fecha.textContent =
-        ahora.toLocaleDateString(
-            "es-AR",
-            opciones
-        );
+fecha.textContent =
+    ahora.toLocaleDateString(
+        "es-AR",
+        opciones
+    );
+```
+
 }
 
-
 /* =========================================
-   CLAVE DEL APUNTE DE HOY
-   ========================================= */
+INICIO DEL DÍA
+========================================= */
 
 function obtenerInicioDelDia() {
 
-    const ahora = new Date();
+```
+const ahora = new Date();
 
-    return new Date(
-        ahora.getFullYear(),
-        ahora.getMonth(),
-        ahora.getDate(),
-        0,
-        0,
-        0,
-        0
-    );
+return new Date(
+    ahora.getFullYear(),
+    ahora.getMonth(),
+    ahora.getDate(),
+    0,
+    0,
+    0,
+    0
+);
+```
+
 }
 
+/* =========================================
+FIN DEL DÍA
+========================================= */
 
 function obtenerFinDelDia() {
 
-    const ahora = new Date();
+```
+const ahora = new Date();
 
-    return new Date(
-        ahora.getFullYear(),
-        ahora.getMonth(),
-        ahora.getDate(),
-        23,
-        59,
-        59,
-        999
-    );
+return new Date(
+    ahora.getFullYear(),
+    ahora.getMonth(),
+    ahora.getDate(),
+    23,
+    59,
+    59,
+    999
+);
+```
+
 }
 
-
 /* =========================================
-   MATERIAS
-   ========================================= */
+MATERIAS
+========================================= */
 
 function cargarMaterias() {
 
-    let materias;
+```
+let materias;
 
-    try {
+try {
 
-        materias =
-            JSON.parse(
-                localStorage.getItem(
-                    STORAGE_MATERIAS
-                )
-            );
-
-    } catch (error) {
-
-        materias = null;
-    }
-
-
-    if (
-        !Array.isArray(materias) ||
-        materias.length === 0
-    ) {
-
-        materias = [
-            ...MATERIAS_POR_DEFECTO
-        ];
-
-        guardarMaterias(materias);
-    }
-
-
-    mostrarMateriasMenu(materias);
-
-    mostrarMateriasConfiguracion(materias);
-}
-
-
-function guardarMaterias(materias) {
-
-    localStorage.setItem(
-        STORAGE_MATERIAS,
-        JSON.stringify(materias)
-    );
-}
-
-
-function obtenerMaterias() {
-
-    try {
-
-        return JSON.parse(
+    materias =
+        JSON.parse(
             localStorage.getItem(
                 STORAGE_MATERIAS
             )
-        ) || [];
+        );
 
-    } catch (error) {
+} catch (error) {
 
-        return [];
+    materias = null;
+}
+
+
+if (
+    !Array.isArray(materias) ||
+    materias.length === 0
+) {
+
+    materias = [
+        ...MATERIAS_POR_DEFECTO
+    ];
+
+    guardarMaterias(
+        materias
+    );
+}
+
+
+mostrarMateriasMenu(
+    materias
+);
+
+mostrarMateriasConfiguracion(
+    materias
+);
+```
+
+}
+
+function guardarMaterias(
+materias
+) {
+
+```
+localStorage.setItem(
+    STORAGE_MATERIAS,
+    JSON.stringify(materias)
+);
+```
+
+}
+
+function obtenerMaterias() {
+
+```
+try {
+
+    return JSON.parse(
+        localStorage.getItem(
+            STORAGE_MATERIAS
+        )
+    ) || [];
+
+} catch (error) {
+
+    return [];
+}
+```
+
+}
+
+/* =========================================
+MENÚ DE MATERIAS
+========================================= */
+
+function mostrarMateriasMenu(
+materias
+) {
+
+```
+menuMateria.innerHTML = "";
+
+
+materias.forEach(
+    function(materia) {
+
+        const boton =
+            document.createElement(
+                "button"
+            );
+
+        boton.type = "button";
+
+        boton.textContent =
+            materia;
+
+
+        boton.addEventListener(
+            "click",
+            function() {
+
+                seleccionarMateria(
+                    materia
+                );
+
+            }
+        );
+
+
+        menuMateria.appendChild(
+            boton
+        );
     }
+);
+
+
+/* -----------------------------------------
+   APUNTES ANTERIORES
+   ----------------------------------------- */
+
+const separadorApuntes =
+    document.createElement(
+        "div"
+    );
+
+separadorApuntes.className =
+    "separador";
+
+
+menuMateria.appendChild(
+    separadorApuntes
+);
+
+
+const apuntesAnteriores =
+    document.createElement(
+        "button"
+    );
+
+apuntesAnteriores.type =
+    "button";
+
+apuntesAnteriores.textContent =
+    "📚 APUNTES ANTERIORES";
+
+
+apuntesAnteriores.addEventListener(
+    "click",
+    function() {
+
+        guardarContextoActual();
+
+        menuMateria.classList.add(
+            "oculto"
+        );
+
+        abrirApuntesAnteriores();
+
+    }
+);
+
+
+menuMateria.appendChild(
+    apuntesAnteriores
+);
+
+
+/* -----------------------------------------
+   CONFIGURACIÓN
+   ----------------------------------------- */
+
+const separadorConfiguracion =
+    document.createElement(
+        "div"
+    );
+
+separadorConfiguracion.className =
+    "separador";
+
+
+menuMateria.appendChild(
+    separadorConfiguracion
+);
+
+
+const configuracion =
+    document.createElement(
+        "button"
+    );
+
+configuracion.type =
+    "button";
+
+configuracion.className =
+    "btn-configuracion";
+
+configuracion.textContent =
+    "⚙ CONFIGURACIÓN";
+
+
+configuracion.addEventListener(
+    "click",
+    abrirConfiguracion
+);
+
+
+menuMateria.appendChild(
+    configuracion
+);
+```
+
 }
 
-
 /* =========================================
-   MENÚ DE MATERIAS
-   ========================================= */
-
-function mostrarMateriasMenu(materias) {
-
-    menuMateria.innerHTML = "";
-
-
-    materias.forEach(
-        function(materia) {
-
-            const boton =
-                document.createElement("button");
-
-            boton.type = "button";
-
-            boton.textContent =
-                materia;
-
-            boton.addEventListener(
-                "click",
-                function() {
-
-                    seleccionarMateria(
-                        materia
-                    );
-
-                }
-            );
-
-            menuMateria.appendChild(
-                boton
-            );
-        }
-    );
-
-
-    /* -----------------------------------------
-       APUNTES ANTERIORES
-       ----------------------------------------- */
-
-    const separadorApuntes =
-        document.createElement("div");
-
-    separadorApuntes.className =
-        "separador";
-
-    menuMateria.appendChild(
-        separadorApuntes
-    );
-
-
-    const apuntesAnteriores =
-        document.createElement("button");
-
-    apuntesAnteriores.type = "button";
-
-    apuntesAnteriores.textContent =
-        "📚 APUNTES ANTERIORES";
-
-    apuntesAnteriores.addEventListener(
-        "click",
-        function() {
-
-            guardarContextoActual();
-
-            menuMateria.classList.add(
-                "oculto"
-            );
-
-            abrirApuntesAnteriores();
-
-        }
-    );
-
-    menuMateria.appendChild(
-        apuntesAnteriores
-    );
-
-
-    /* -----------------------------------------
-       CONFIGURACIÓN
-       ----------------------------------------- */
-
-    const separadorConfiguracion =
-        document.createElement("div");
-
-    separadorConfiguracion.className =
-        "separador";
-
-    menuMateria.appendChild(
-        separadorConfiguracion
-    );
-
-
-    const configuracion =
-        document.createElement("button");
-
-    configuracion.type = "button";
-
-    configuracion.className =
-        "btn-configuracion";
-
-    configuracion.textContent =
-        "⚙ CONFIGURACIÓN";
-
-    configuracion.addEventListener(
-        "click",
-        abrirConfiguracion
-    );
-
-    menuMateria.appendChild(
-        configuracion
-    );
-}
-
-
-/* =========================================
-   CONTEXTO DEL APUNTE ACTUAL
-   ========================================= */
+CONTEXTO DEL APUNTE ACTUAL
+========================================= */
 
 function guardarContextoActual() {
 
-    if (
-        materiaActual === "" &&
-        nota.value.trim() === ""
-    ) {
+```
+if (
+    materiaActual === "" &&
+    nota.value.trim() === ""
+) {
 
-        contextoApunteActual = null;
+    contextoApunteActual =
+        null;
 
-        return;
-    }
-
-
-    contextoApunteActual = {
-
-        id:
-            apunteActualId,
-
-        materia:
-            materiaActual,
-
-        contenido:
-            nota.value,
-
-        fechaCreacion:
-            fechaCreacionActual
-                ? fechaCreacionActual.toISOString()
-                : null
-    };
-
-
-    console.log(
-        "Contexto guardado:",
-        contextoApunteActual
-    );
+    return;
 }
 
 
+contextoApunteActual = {
+
+    id:
+        apunteActualId,
+
+    materia:
+        materiaActual,
+
+    contenido:
+        nota.value,
+
+    fechaCreacion:
+        fechaCreacionActual
+            ? fechaCreacionActual.toISOString()
+            : null
+};
+
+
+console.log(
+    "Contexto guardado:",
+    contextoApunteActual
+);
+```
+
+}
+
 /* =========================================
-   SELECCIONAR MATERIA
-   ========================================= */
+SELECCIONAR MATERIA
+========================================= */
 
-async function seleccionarMateria(materia) {
+async function seleccionarMateria(
+materia
+) {
 
-    menuMateria.classList.add(
+```
+menuMateria.classList.add(
+    "oculto"
+);
+
+
+if (
+    materiaActual === materia
+) {
+
+    nota.focus();
+
+    return;
+}
+
+
+/*
+   Si cambiamos de materia y hay texto,
+   guardamos antes de cambiar.
+*/
+
+if (
+    materiaActual !== "" &&
+    nota.value.trim() !== ""
+) {
+
+    await guardarNota(true);
+}
+
+
+materiaActual =
+    materia;
+
+
+await cargarApunteDeHoy(
+    materia
+);
+```
+
+}
+
+/* =========================================
+CARGAR APUNTE DE HOY
+========================================= */
+
+async function cargarApunteDeHoy(
+materia
+) {
+
+```
+estado.textContent =
+    "Buscando apunte de hoy · " +
+    materia;
+
+
+const inicio =
+    obtenerInicioDelDia();
+
+const fin =
+    obtenerFinDelDia();
+
+
+const { data, error } =
+    await supabaseClient
+        .from("apuntes")
+        .select(
+            "id, materia, fecha_creacion, fecha_modificacion, titulo, contenido"
+        )
+        .eq(
+            "materia",
+            materia
+        )
+        .gte(
+            "fecha_creacion",
+            inicio.toISOString()
+        )
+        .lte(
+            "fecha_creacion",
+            fin.toISOString()
+        )
+        .order(
+            "fecha_creacion",
+            {
+                ascending: false
+            }
+        )
+        .limit(1);
+
+
+if (error) {
+
+    console.error(
+        "Error buscando apunte de hoy:",
+        error
+    );
+
+
+    iniciarNuevoApunteSinGuardar();
+
+
+    /*
+       Aunque Supabase falle,
+       podemos intentar recuperar
+       el borrador local.
+    */
+
+    recuperarBorradorLocal(
+        materia
+    );
+
+
+    mostrarMensaje(
+        "No se pudo consultar el apunte de hoy."
+    );
+
+    return;
+}
+
+
+/*
+   EXISTE APUNTE DE HOY
+*/
+
+if (
+    data &&
+    data.length > 0
+) {
+
+    const apunte =
+        data[0];
+
+
+    cargarApunteEnPantalla(
+        apunte,
+        "Apunte de hoy · "
+    );
+
+
+    /*
+       Después de cargar Supabase,
+       verificamos si existe una copia
+       local más nueva.
+    */
+
+    recuperarBorradorLocal(
+        materia,
+        apunte
+    );
+
+
+    return;
+}
+
+
+/*
+   NO EXISTE APUNTE DE HOY.
+
+   No creamos nada todavía.
+*/
+
+iniciarNuevoApunteSinGuardar();
+
+
+/*
+   Pero puede existir un borrador
+   que todavía nunca llegó a Supabase.
+*/
+
+recuperarBorradorLocal(
+    materia
+);
+```
+
+}
+
+/* =========================================
+NUEVO APUNTE SIN GUARDAR
+========================================= */
+
+function iniciarNuevoApunteSinGuardar() {
+
+```
+cargandoApunte = true;
+
+
+apunteActualId =
+    null;
+
+fechaCreacionActual =
+    new Date();
+
+nota.value =
+    "";
+
+
+actualizarContador();
+
+
+materiaSeleccionada.textContent =
+    materiaActual ||
+    "Seleccionar";
+
+
+if (
+    materiaActual !== ""
+) {
+
+    materiaSeleccionada.style.color =
+        "#e5e7eb";
+
+} else {
+
+    materiaSeleccionada.style.color =
+        "#9ca3af";
+}
+
+
+estado.textContent =
+    materiaActual
+        ? "Nuevo apunte · " +
+          materiaActual
+        : "Nueva captura";
+
+
+eliminarBotonVolverActual();
+
+
+cargandoApunte = false;
+
+
+nota.focus();
+```
+
+}
+
+/* =========================================
+CARGAR APUNTE EN PANTALLA
+========================================= */
+
+function cargarApunteEnPantalla(
+apunte,
+textoEstado
+) {
+
+```
+cargandoApunte = true;
+
+
+apunteActualId =
+    apunte.id;
+
+
+materiaActual =
+    apunte.materia;
+
+
+fechaCreacionActual =
+    apunte.fecha_creacion
+        ? new Date(
+            apunte.fecha_creacion
+        )
+        : new Date();
+
+
+nota.value =
+    apunte.contenido || "";
+
+
+actualizarContador();
+
+
+materiaSeleccionada.textContent =
+    materiaActual;
+
+
+materiaSeleccionada.style.color =
+    "#e5e7eb";
+
+
+estado.textContent =
+    textoEstado +
+    materiaActual;
+
+
+cargandoApunte = false;
+
+
+nota.focus();
+```
+
+}
+
+/* =========================================
+MENÚ
+========================================= */
+
+btnMateria.addEventListener(
+"click",
+function(event) {
+
+```
+    event.stopPropagation();
+
+    menuMateria.classList.toggle(
         "oculto"
     );
+}
+```
 
+);
 
+document.addEventListener(
+"click",
+function(event) {
+
+```
     if (
-        materiaActual === materia
+        !event.target.closest(
+            ".header"
+        )
     ) {
 
-        nota.focus();
-
-        return;
+        menuMateria.classList.add(
+            "oculto"
+        );
     }
+}
+```
 
+);
 
-    if (
-        materiaActual !== "" &&
-        nota.value.trim() !== ""
-    ) {
+/* =========================================
+CONTADOR
+========================================= */
 
-        await guardarNota(true);
-    }
+nota.addEventListener(
+"input",
+function() {
 
+```
+    actualizarContador();
 
-    materiaActual = materia;
+    guardarBorradorLocal();
+}
+```
 
+);
 
-    await cargarApunteDeHoy(materia);
+function actualizarContador() {
+
+```
+contador.textContent =
+    nota.value.length +
+    " caracteres";
+```
+
+}
+
+/* =========================================
+COPIA LOCAL DE SEGURIDAD
+========================================= */
+
+function guardarBorradorLocal() {
+
+```
+/*
+   Mientras estamos cargando un apunte
+   no hacemos una copia.
+*/
+
+if (cargandoApunte) {
+
+    return;
 }
 
 
-/* =========================================
-   CARGAR APUNTE DE HOY
-   ========================================= */
+/*
+   Si no hay materia,
+   no guardamos nada.
+*/
 
-async function cargarApunteDeHoy(materia) {
+if (
+    materiaActual === ""
+) {
+
+    return;
+}
+
+
+/*
+   Si no hay texto,
+   eliminamos cualquier borrador
+   de esta materia.
+*/
+
+if (
+    nota.value.trim() === ""
+) {
+
+    eliminarBorradorLocal();
+
+    return;
+}
+
+
+const borrador = {
+
+    id:
+        apunteActualId,
+
+    materia:
+        materiaActual,
+
+    contenido:
+        nota.value,
+
+    fechaCreacion:
+        fechaCreacionActual
+            ? fechaCreacionActual.toISOString()
+            : new Date().toISOString(),
+
+    fechaBorrador:
+        new Date().toISOString()
+};
+
+
+try {
+
+    localStorage.setItem(
+        STORAGE_BORRADOR,
+        JSON.stringify(
+            borrador
+        )
+    );
+
 
     estado.textContent =
-        "Buscando apunte de hoy · " +
-        materia;
+        "Borrador local · " +
+        materiaActual;
+
+} catch (error) {
+
+    console.error(
+        "No se pudo guardar el borrador local:",
+        error
+    );
+}
+```
+
+}
+
+/* =========================================
+RECUPERAR BORRADOR LOCAL
+========================================= */
+
+function recuperarBorradorLocal(
+materia,
+apunteSupabase = null
+) {
+
+```
+let borrador;
+
+try {
+
+    borrador =
+        JSON.parse(
+            localStorage.getItem(
+                STORAGE_BORRADOR
+            )
+        );
+
+} catch (error) {
+
+    borrador = null;
+}
 
 
-    const inicio =
-        obtenerInicioDelDia();
+if (
+    !borrador
+) {
 
-    const fin =
-        obtenerFinDelDia();
+    return;
+}
+
+
+/*
+   El borrador tiene que pertenecer
+   a la materia que estamos abriendo.
+*/
+
+if (
+    borrador.materia !== materia
+) {
+
+    return;
+}
+
+
+const fechaBorrador =
+    new Date(
+        borrador.fechaBorrador
+    );
+
+
+if (
+    Number.isNaN(
+        fechaBorrador.getTime()
+    )
+) {
+
+    return;
+}
+
+
+/*
+   Si ya existe un apunte en Supabase,
+   solamente recuperamos el borrador
+   si es más nuevo que la modificación
+   que tenemos en Supabase.
+*/
+
+if (
+    apunteSupabase &&
+    apunteSupabase.fecha_modificacion
+) {
+
+    const fechaServidor =
+        new Date(
+            apunteSupabase.fecha_modificacion
+        );
+
+
+    if (
+        !Number.isNaN(
+            fechaServidor.getTime()
+        ) &&
+        fechaBorrador <= fechaServidor
+    ) {
+
+        /*
+           El servidor ya tiene algo
+           igual o más nuevo.
+
+           Eliminamos la copia vieja.
+        */
+
+        eliminarBorradorLocal();
+
+        return;
+    }
+}
+
+
+/*
+   Si el borrador corresponde a otro
+   apunte anterior, no lo mezclamos.
+*/
+
+if (
+    apunteSupabase &&
+    borrador.id &&
+    borrador.id !== apunteSupabase.id
+) {
+
+    return;
+}
+
+
+/*
+   Recuperamos el texto.
+*/
+
+cargandoApunte = true;
+
+
+apunteActualId =
+    borrador.id || null;
+
+
+materiaActual =
+    borrador.materia;
+
+
+fechaCreacionActual =
+    borrador.fechaCreacion
+        ? new Date(
+            borrador.fechaCreacion
+        )
+        : new Date();
+
+
+nota.value =
+    borrador.contenido || "";
+
+
+actualizarContador();
+
+
+materiaSeleccionada.textContent =
+    materiaActual;
+
+
+materiaSeleccionada.style.color =
+    "#e5e7eb";
+
+
+estado.textContent =
+    "✓ Borrador recuperado · " +
+    materiaActual;
+
+
+cargandoApunte = false;
+
+
+mostrarMensaje(
+    "✓ Recuperamos lo que estabas escribiendo"
+);
+
+
+nota.focus();
+```
+
+}
+
+/* =========================================
+ELIMINAR BORRADOR LOCAL
+========================================= */
+
+function eliminarBorradorLocal() {
+
+```
+try {
+
+    localStorage.removeItem(
+        STORAGE_BORRADOR
+    );
+
+} catch (error) {
+
+    console.error(
+        "No se pudo eliminar el borrador:",
+        error
+    );
+}
+```
+
+}
+
+/* =========================================
+GUARDAR APUNTE
+========================================= */
+
+btnGuardar.addEventListener(
+"click",
+function() {
+
+```
+    guardarNota(false);
+
+}
+```
+
+);
+
+async function guardarNota(
+esAutomatico
+) {
+
+```
+const texto =
+    nota.value.trim();
+
+
+/*
+   REGLA FUNDAMENTAL:
+
+   Si no hay texto,
+   NO SE GUARDA NADA.
+*/
+
+if (
+    texto === ""
+) {
+
+    eliminarBorradorLocal();
+
+
+    if (
+        !esAutomatico
+    ) {
+
+        mostrarMensaje(
+            "No hay nada para guardar."
+        );
+    }
+
+    return false;
+}
+
+
+/*
+   Si no hay materia,
+   tampoco guardamos.
+*/
+
+if (
+    materiaActual === ""
+) {
+
+    if (
+        !esAutomatico
+    ) {
+
+        mostrarMensaje(
+            "Primero elegí una materia."
+        );
+    }
+
+    return false;
+}
+
+
+/* =====================================
+   CREAR NUEVO APUNTE
+   ===================================== */
+
+if (
+    !apunteActualId
+) {
+
+    const fechaCreacion =
+        fechaCreacionActual ||
+        new Date();
 
 
     const { data, error } =
         await supabaseClient
             .from("apuntes")
-            .select(
-                "id, materia, fecha_creacion, fecha_modificacion, titulo, contenido"
-            )
-            .eq(
-                "materia",
-                materia
-            )
-            .gte(
-                "fecha_creacion",
-                inicio.toISOString()
-            )
-            .lte(
-                "fecha_creacion",
-                fin.toISOString()
-            )
-            .order(
-                "fecha_creacion",
-                {
-                    ascending: false
-                }
-            )
-            .limit(1);
-
-
-    if (error) {
-
-        console.error(
-            "Error buscando apunte de hoy:",
-            error
-        );
-
-
-        iniciarNuevoApunteSinGuardar();
-
-        mostrarMensaje(
-            "No se pudo consultar el apunte de hoy."
-        );
-
-        return;
-    }
-
-
-    if (
-        data &&
-        data.length > 0
-    ) {
-
-        cargarApunteEnPantalla(
-            data[0],
-            "Apunte de hoy · "
-        );
-
-        return;
-    }
-
-
-    iniciarNuevoApunteSinGuardar();
-}
-
-
-/* =========================================
-   NUEVO APUNTE SIN GUARDAR
-   ========================================= */
-
-function iniciarNuevoApunteSinGuardar() {
-
-    apunteActualId = null;
-
-    fechaCreacionActual =
-        new Date();
-
-    nota.value = "";
-
-    actualizarContador();
-
-    materiaSeleccionada.textContent =
-        materiaActual || "Seleccionar";
-
-    if (materiaActual !== "") {
-
-        materiaSeleccionada.style.color =
-            "#e5e7eb";
-
-    } else {
-
-        materiaSeleccionada.style.color =
-            "#9ca3af";
-    }
-
-
-    estado.textContent =
-        materiaActual
-            ? "Nuevo apunte · " +
-              materiaActual
-            : "Nueva captura";
-
-
-    eliminarBotonVolverActual();
-
-    nota.focus();
-}
-
-
-/* =========================================
-   CARGAR APUNTE EN PANTALLA
-   ========================================= */
-
-function cargarApunteEnPantalla(
-    apunte,
-    textoEstado
-) {
-
-    apunteActualId =
-        apunte.id;
-
-    materiaActual =
-        apunte.materia;
-
-    fechaCreacionActual =
-        apunte.fecha_creacion
-            ? new Date(
-                apunte.fecha_creacion
-            )
-            : new Date();
-
-
-    nota.value =
-        apunte.contenido || "";
-
-    actualizarContador();
-
-
-    materiaSeleccionada.textContent =
-        materiaActual;
-
-    materiaSeleccionada.style.color =
-        "#e5e7eb";
-
-
-    estado.textContent =
-        textoEstado +
-        materiaActual;
-
-
-    nota.focus();
-}
-
-
-/* =========================================
-   MENÚ
-   ========================================= */
-
-btnMateria.addEventListener(
-    "click",
-    function(event) {
-
-        event.stopPropagation();
-
-        menuMateria.classList.toggle(
-            "oculto"
-        );
-    }
-);
-
-
-document.addEventListener(
-    "click",
-    function(event) {
-
-        if (
-            !event.target.closest(
-                ".header"
-            )
-        ) {
-
-            menuMateria.classList.add(
-                "oculto"
-            );
-        }
-    }
-);
-
-
-/* =========================================
-   CONTADOR
-   ========================================= */
-
-nota.addEventListener(
-    "input",
-    actualizarContador
-);
-
-
-function actualizarContador() {
-
-    contador.textContent =
-        nota.value.length +
-        " caracteres";
-}
-
-
-/* =========================================
-   GUARDAR APUNTE
-   ========================================= */
-
-btnGuardar.addEventListener(
-    "click",
-    function() {
-
-        guardarNota(false);
-
-    }
-);
-
-
-async function guardarNota(esAutomatico) {
-
-    const texto =
-        nota.value.trim();
-
-
-    /*
-       Si no hay texto,
-       NO SE GUARDA NADA.
-    */
-
-    if (texto === "") {
-
-        if (!esAutomatico) {
-
-            mostrarMensaje(
-                "No hay nada para guardar."
-            );
-        }
-
-        return false;
-    }
-
-
-    /*
-       Si no hay materia,
-       tampoco guardamos.
-    */
-
-    if (materiaActual === "") {
-
-        if (!esAutomatico) {
-
-            mostrarMensaje(
-                "Primero elegí una materia."
-            );
-        }
-
-        return false;
-    }
-
-
-    /* =====================================
-       CREAR NUEVO APUNTE
-       ===================================== */
-
-    if (!apunteActualId) {
-
-        const fechaCreacion =
-            fechaCreacionActual ||
-            new Date();
-
-
-        const { data, error } =
-            await supabaseClient
-                .from("apuntes")
-                .insert({
-
-                    materia:
-                        materiaActual,
-
-                    fecha_creacion:
-                        fechaCreacion.toISOString(),
-
-                    fecha_modificacion:
-                        new Date().toISOString(),
-
-                    titulo:
-                        obtenerTitulo(),
-
-                    contenido:
-                        texto
-
-                })
-                .select()
-                .single();
-
-
-        if (error) {
-
-            console.error(
-                "Error al crear apunte:",
-                error
-            );
-
-
-            if (!esAutomatico) {
-
-                mostrarMensaje(
-                    "Error al guardar."
-                );
-            }
-
-            return false;
-        }
-
-
-        apunteActualId =
-            data.id;
-
-
-        fechaCreacionActual =
-            new Date(
-                data.fecha_creacion
-            );
-
-
-        estado.textContent =
-            "Guardada · " +
-            materiaActual;
-
-
-        if (!esAutomatico) {
-
-            mostrarMensaje(
-                "✓ Apunte guardado"
-            );
-        }
-
-
-        return true;
-    }
-
-
-    /* =====================================
-       ACTUALIZAR APUNTE EXISTENTE
-       ===================================== */
-
-    const ahora =
-        new Date();
-
-
-    const { error } =
-        await supabaseClient
-            .from("apuntes")
-            .update({
+            .insert({
 
                 materia:
                     materiaActual,
 
+                fecha_creacion:
+                    fechaCreacion.toISOString(),
+
                 fecha_modificacion:
-                    ahora.toISOString(),
+                    new Date().toISOString(),
 
                 titulo:
                     obtenerTitulo(),
@@ -828,40 +1223,77 @@ async function guardarNota(esAutomatico) {
                     texto
 
             })
-            .eq(
-                "id",
-                apunteActualId
-            );
+            .select()
+            .single();
 
 
-    if (error) {
+    if (
+        error
+    ) {
 
         console.error(
-            "Error al actualizar:",
+            "Error al crear apunte:",
             error
         );
 
 
-        if (!esAutomatico) {
+        /*
+           MUY IMPORTANTE:
+
+           Si falla Supabase,
+           dejamos el borrador local.
+        */
+
+        guardarBorradorLocal();
+
+
+        if (
+            !esAutomatico
+        ) {
 
             mostrarMensaje(
-                "Error al actualizar."
+                "No se pudo sincronizar. El borrador quedó guardado localmente."
             );
         }
+
 
         return false;
     }
 
 
+    /*
+       Supabase confirmó el guardado.
+    */
+
+    apunteActualId =
+        data.id;
+
+
+    fechaCreacionActual =
+        new Date(
+            data.fecha_creacion
+        );
+
+
+    /*
+       Ya no necesitamos la copia
+       de seguridad local.
+    */
+
+    eliminarBorradorLocal();
+
+
     estado.textContent =
-        "Actualizada · " +
+        "Guardada · " +
         materiaActual;
 
 
-    if (!esAutomatico) {
+    if (
+        !esAutomatico
+    ) {
 
         mostrarMensaje(
-            "✓ Cambios guardados"
+            "✓ Apunte guardado"
         );
     }
 
@@ -870,1426 +1302,1530 @@ async function guardarNota(esAutomatico) {
 }
 
 
-/* =========================================
-   TÍTULO AUTOMÁTICO
-   ========================================= */
+/* =====================================
+   ACTUALIZAR APUNTE EXISTENTE
+   ===================================== */
 
-function obtenerTitulo() {
-
-    const texto =
-        nota.value.trim();
+const ahora =
+    new Date();
 
 
-    if (texto === "") {
+const { error } =
+    await supabaseClient
+        .from("apuntes")
+        .update({
 
-        return "Apunte";
-    }
+            materia:
+                materiaActual,
 
+            fecha_modificacion:
+                ahora.toISOString(),
 
-    const primeraLinea =
-        texto
-            .split("\n")[0]
-            .trim();
+            titulo:
+                obtenerTitulo(),
 
+            contenido:
+                texto
 
-    if (
-        primeraLinea.length > 80
-    ) {
-
-        return primeraLinea.substring(
-            0,
-            80
+        })
+        .eq(
+            "id",
+            apunteActualId
         );
-    }
 
 
-    return primeraLinea ||
-        "Apunte";
-}
+if (
+    error
+) {
 
-
-/* =========================================
-   AUTOGUARDADO
-   ========================================= */
-
-function iniciarGuardadoAutomatico() {
-
-    if (guardadoAutomatico) {
-
-        clearInterval(
-            guardadoAutomatico
-        );
-    }
+    console.error(
+        "Error al actualizar:",
+        error
+    );
 
 
     /*
-       Autoguardado cada 5 minutos.
+       Si no pudo actualizar Supabase,
+       conservamos el borrador local.
     */
 
-    guardadoAutomatico =
-        setInterval(
-            function() {
+    guardarBorradorLocal();
 
-                if (
-                    nota.value.trim() !== "" &&
-                    materiaActual !== ""
-                ) {
 
-                    guardarNota(true);
-                }
+    if (
+        !esAutomatico
+    ) {
 
-            },
-            5 * 60 * 1000
+        mostrarMensaje(
+            "No se pudo sincronizar. El borrador quedó guardado localmente."
         );
+    }
+
+
+    return false;
 }
 
 
+/*
+   Supabase confirmó la actualización.
+*/
+
+eliminarBorradorLocal();
+
+
+estado.textContent =
+    "Actualizada · " +
+    materiaActual;
+
+
+if (
+    !esAutomatico
+) {
+
+    mostrarMensaje(
+        "✓ Cambios guardados"
+    );
+}
+
+
+return true;
+```
+
+}
+
 /* =========================================
-   NUEVO APUNTE
-   ========================================= */
+TÍTULO AUTOMÁTICO
+========================================= */
 
-btnNuevo.addEventListener(
-    "click",
-    async function() {
+function obtenerTitulo() {
 
-        if (
-            nota.value.trim() !== ""
-        ) {
-
-            const confirmar =
-                confirm(
-                    "¿Querés comenzar un nuevo apunte?"
-                );
+```
+const texto =
+    nota.value.trim();
 
 
-            if (!confirmar) {
+if (
+    texto === ""
+) {
 
-                return;
+    return "Apunte";
+}
+
+
+const primeraLinea =
+    texto
+        .split("\n")[0]
+        .trim();
+
+
+if (
+    primeraLinea.length > 80
+) {
+
+    return primeraLinea.substring(
+        0,
+        80
+    );
+}
+
+
+return primeraLinea ||
+    "Apunte";
+```
+
+}
+
+/* =========================================
+AUTOGUARDADO
+========================================= */
+
+function iniciarGuardadoAutomatico() {
+
+```
+if (
+    guardadoAutomatico
+) {
+
+    clearInterval(
+        guardadoAutomatico
+    );
+}
+
+
+/*
+   Cada 5 minutos.
+*/
+
+guardadoAutomatico =
+    setInterval(
+        function() {
+
+            if (
+                nota.value.trim() !== "" &&
+                materiaActual !== ""
+            ) {
+
+                guardarNota(true);
             }
 
+        },
+        5 * 60 * 1000
+    );
+```
 
-            await guardarNota(true);
-        }
+}
+
+/* =========================================
+NUEVO APUNTE
+========================================= */
+
+btnNuevo.addEventListener(
+"click",
+async function() {
+
+```
+    /*
+       Si hay contenido,
+       preguntamos antes de reemplazarlo.
+    */
+
+    if (
+        nota.value.trim() !== ""
+    ) {
+
+        const confirmar =
+            confirm(
+                "¿Querés comenzar un nuevo apunte?"
+            );
 
 
         if (
-            materiaActual === ""
+            !confirmar
         ) {
-
-            mostrarMensaje(
-                "Primero elegí una materia."
-            );
 
             return;
         }
 
 
-        iniciarNuevoApunteSinGuardar();
+        /*
+           Guardamos antes de comenzar
+           el nuevo.
+        */
+
+        await guardarNota(true);
+    }
+
+
+    /*
+       No cambiamos de materia.
+
+       NUEVO significa:
+       nuevo apunte dentro de la
+       materia seleccionada.
+    */
+
+    if (
+        materiaActual === ""
+    ) {
+
+        mostrarMensaje(
+            "Primero elegí una materia."
+        );
+
+        return;
+    }
+
+
+    iniciarNuevoApunteSinGuardar();
+}
+```
+
+);
+
+/* =========================================
+MENSAJES
+========================================= */
+
+function mostrarMensaje(
+texto
+) {
+
+```
+mensaje.textContent =
+    texto;
+
+
+setTimeout(
+    function() {
+
+        mensaje.textContent =
+            "";
+
+    },
+    2500
+);
+```
+
+}
+
+/* =========================================
+APUNTES ANTERIORES
+========================================= */
+
+async function abrirApuntesAnteriores() {
+
+```
+mostrarMensaje(
+    "Buscando apuntes..."
+);
+
+
+const { data, error } =
+    await supabaseClient
+        .from("apuntes")
+        .select(
+            "id, materia, fecha_creacion, fecha_modificacion, titulo, contenido"
+        )
+        .order(
+            "fecha_creacion",
+            {
+                ascending: false
+            }
+        );
+
+
+if (
+    error
+) {
+
+    console.error(
+        "Error al buscar apuntes:",
+        error
+    );
+
+
+    mostrarMensaje(
+        "Error al buscar apuntes."
+    );
+
+    return;
+}
+
+
+mostrarListaApuntes(
+    data || []
+);
+```
+
+}
+
+/* =========================================
+MODAL DE APUNTES ANTERIORES
+========================================= */
+
+function mostrarListaApuntes(
+apuntes
+) {
+
+```
+const modalExistente =
+    document.getElementById(
+        "modalApuntes"
+    );
+
+
+if (
+    modalExistente
+) {
+
+    modalExistente.remove();
+}
+
+
+const modal =
+    document.createElement(
+        "div"
+    );
+
+modal.id =
+    "modalApuntes";
+
+modal.className =
+    "modal";
+
+
+const contenido =
+    document.createElement(
+        "div"
+    );
+
+contenido.className =
+    "modal-contenido";
+
+
+/* -----------------------------------------
+   ENCABEZADO
+   ----------------------------------------- */
+
+const encabezado =
+    document.createElement(
+        "div"
+    );
+
+encabezado.className =
+    "modal-header";
+
+
+const titulo =
+    document.createElement(
+        "h2"
+    );
+
+titulo.textContent =
+    "MIS APUNTES";
+
+
+const cerrar =
+    document.createElement(
+        "button"
+    );
+
+cerrar.className =
+    "btn-cerrar";
+
+cerrar.textContent =
+    "×";
+
+cerrar.title =
+    "Cerrar";
+
+
+cerrar.addEventListener(
+    "click",
+    function() {
+
+        volverAlContexto();
+
+        modal.remove();
+
     }
 );
 
 
-/* =========================================
-   MENSAJES
-   ========================================= */
+encabezado.appendChild(
+    titulo
+);
 
-function mostrarMensaje(texto) {
+encabezado.appendChild(
+    cerrar
+);
 
-    mensaje.textContent =
-        texto;
+contenido.appendChild(
+    encabezado
+);
 
 
-    setTimeout(
-        function() {
+/* -----------------------------------------
+   SIN APUNTES
+   ----------------------------------------- */
 
-            mensaje.textContent =
-                "";
+if (
+    apuntes.length === 0
+) {
 
-        },
-        2000
+    const vacio =
+        document.createElement(
+            "p"
+        );
+
+    vacio.textContent =
+        "Todavía no hay apuntes guardados.";
+
+    vacio.style.color =
+        "#9ca3af";
+
+    vacio.style.textAlign =
+        "center";
+
+    vacio.style.padding =
+        "30px 10px";
+
+
+    contenido.appendChild(
+        vacio
     );
 }
 
 
-/* =========================================
-   APUNTES ANTERIORES
-   ========================================= */
+/* -----------------------------------------
+   LISTA
+   ----------------------------------------- */
 
-async function abrirApuntesAnteriores() {
+apuntes.forEach(
+    function(apunte) {
 
-    mostrarMensaje(
-        "Buscando apuntes..."
+        const item =
+            document.createElement(
+                "button"
+            );
+
+
+        item.type =
+            "button";
+
+
+        item.style.width =
+            "100%";
+
+        item.style.textAlign =
+            "left";
+
+        item.style.padding =
+            "13px";
+
+        item.style.marginBottom =
+            "8px";
+
+        item.style.border =
+            "1px solid #1f2937";
+
+        item.style.borderRadius =
+            "10px";
+
+        item.style.background =
+            "#030712";
+
+        item.style.color =
+            "#e5e7eb";
+
+        item.style.cursor =
+            "pointer";
+
+
+        const materia =
+            document.createElement(
+                "div"
+            );
+
+
+        materia.textContent =
+            apunte.materia;
+
+        materia.style.fontWeight =
+            "700";
+
+        materia.style.fontSize =
+            "14px";
+
+
+        const fechaApunte =
+            document.createElement(
+                "div"
+            );
+
+
+        fechaApunte.textContent =
+            formatearFechaApunte(
+                apunte.fecha_creacion
+            );
+
+        fechaApunte.style.color =
+            "#9ca3af";
+
+        fechaApunte.style.fontSize =
+            "12px";
+
+        fechaApunte.style.marginTop =
+            "4px";
+
+
+        const tituloApunte =
+            document.createElement(
+                "div"
+            );
+
+
+        tituloApunte.textContent =
+            apunte.titulo ||
+            "Apunte";
+
+        tituloApunte.style.color =
+            "#d1d5db";
+
+        tituloApunte.style.fontSize =
+            "13px";
+
+        tituloApunte.style.marginTop =
+            "3px";
+
+
+        item.appendChild(
+            materia
+        );
+
+        item.appendChild(
+            fechaApunte
+        );
+
+        item.appendChild(
+            tituloApunte
+        );
+
+
+        item.addEventListener(
+            "click",
+            function() {
+
+                cargarApunteAnterior(
+                    apunte
+                );
+
+                modal.remove();
+
+            }
+        );
+
+
+        contenido.appendChild(
+            item
+        );
+    }
+);
+
+
+/* -----------------------------------------
+   CERRAR
+   ----------------------------------------- */
+
+const botonCerrar =
+    document.createElement(
+        "button"
     );
 
+
+botonCerrar.className =
+    "btn-modal-cerrar";
+
+botonCerrar.textContent =
+    "CERRAR";
+
+
+botonCerrar.addEventListener(
+    "click",
+    function() {
+
+        volverAlContexto();
+
+        modal.remove();
+
+    }
+);
+
+
+contenido.appendChild(
+    botonCerrar
+);
+
+
+modal.appendChild(
+    contenido
+);
+
+
+document.body.appendChild(
+    modal
+);
+```
+
+}
+
+/* =========================================
+FORMATEAR FECHA
+========================================= */
+
+function formatearFechaApunte(
+fechaTexto
+) {
+
+```
+if (
+    !fechaTexto
+) {
+
+    return "";
+}
+
+
+const fecha =
+    new Date(
+        fechaTexto
+    );
+
+
+if (
+    Number.isNaN(
+        fecha.getTime()
+    )
+) {
+
+    return "";
+}
+
+
+return fecha.toLocaleDateString(
+    "es-AR",
+    {
+        weekday: "short",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+    }
+);
+```
+
+}
+
+/* =========================================
+CARGAR APUNTE ANTERIOR
+========================================= */
+
+function cargarApunteAnterior(
+apunte
+) {
+
+```
+cargandoApunte = true;
+
+
+apunteActualId =
+    apunte.id;
+
+
+materiaActual =
+    apunte.materia;
+
+
+fechaCreacionActual =
+    apunte.fecha_creacion
+        ? new Date(
+            apunte.fecha_creacion
+        )
+        : new Date();
+
+
+nota.value =
+    apunte.contenido || "";
+
+
+actualizarContador();
+
+
+materiaSeleccionada.textContent =
+    materiaActual;
+
+
+materiaSeleccionada.style.color =
+    "#e5e7eb";
+
+
+estado.textContent =
+    "Apunte anterior · " +
+    materiaActual;
+
+
+cargandoApunte = false;
+
+
+mostrarMensaje(
+    "✓ Apunte cargado"
+);
+
+
+nota.focus();
+
+
+crearBotonVolverActual();
+```
+
+}
+
+/* =========================================
+BOTÓN VOLVER AL APUNTE ACTUAL
+========================================= */
+
+function crearBotonVolverActual() {
+
+```
+eliminarBotonVolverActual();
+
+
+const boton =
+    document.createElement(
+        "button"
+    );
+
+
+boton.id =
+    "btnVolverActual";
+
+
+boton.textContent =
+    "↩ VOLVER AL APUNTE ACTUAL";
+
+
+boton.style.position =
+    "fixed";
+
+boton.style.bottom =
+    "85px";
+
+boton.style.left =
+    "50%";
+
+boton.style.transform =
+    "translateX(-50%)";
+
+boton.style.zIndex =
+    "200";
+
+boton.style.height =
+    "42px";
+
+boton.style.padding =
+    "0 16px";
+
+boton.style.border =
+    "1px solid #374151";
+
+boton.style.borderRadius =
+    "10px";
+
+boton.style.background =
+    "#111827";
+
+boton.style.color =
+    "#e5e7eb";
+
+boton.style.fontSize =
+    "12px";
+
+boton.style.fontWeight =
+    "700";
+
+boton.style.cursor =
+    "pointer";
+
+
+boton.addEventListener(
+    "click",
+    function() {
+
+        volverAlContexto();
+
+    }
+);
+
+
+document.body.appendChild(
+    boton
+);
+```
+
+}
+
+/* =========================================
+ELIMINAR BOTÓN VOLVER
+========================================= */
+
+function eliminarBotonVolverActual() {
+
+```
+const boton =
+    document.getElementById(
+        "btnVolverActual"
+    );
+
+
+if (
+    boton
+) {
+
+    boton.remove();
+}
+```
+
+}
+
+/* =========================================
+VOLVER AL APUNTE ACTUAL
+========================================= */
+
+async function volverAlContexto() {
+
+```
+eliminarBotonVolverActual();
+
+
+if (
+    !contextoApunteActual
+) {
+
+    return;
+}
+
+
+const contexto =
+    contextoApunteActual;
+
+
+/*
+   Si el apunte actual ya tenía ID,
+   buscamos la versión más reciente
+   en Supabase.
+*/
+
+if (
+    contexto.id
+) {
 
     const { data, error } =
         await supabaseClient
             .from("apuntes")
             .select(
-                "id, materia, fecha_creacion, fecha_modificacion, titulo, contenido"
+                "id, materia, fecha_creacion, contenido"
             )
-            .order(
-                "fecha_creacion",
-                {
-                    ascending: false
-                }
-            );
-
-
-    if (error) {
-
-        console.error(
-            "Error al buscar apuntes:",
-            error
-        );
-
-
-        mostrarMensaje(
-            "Error al buscar apuntes."
-        );
-
-        return;
-    }
-
-
-    mostrarListaApuntes(
-        data || []
-    );
-}
-
-
-/* =========================================
-   MODAL DE APUNTES ANTERIORES
-   ========================================= */
-
-function mostrarListaApuntes(apuntes) {
-
-    const modalExistente =
-        document.getElementById(
-            "modalApuntes"
-        );
-
-
-    if (modalExistente) {
-
-        modalExistente.remove();
-    }
-
-
-    const modal =
-        document.createElement("div");
-
-    modal.id =
-        "modalApuntes";
-
-    modal.className =
-        "modal";
-
-
-    const contenido =
-        document.createElement("div");
-
-    contenido.className =
-        "modal-contenido";
-
-
-    const encabezado =
-        document.createElement("div");
-
-    encabezado.className =
-        "modal-header";
-
-
-    const titulo =
-        document.createElement("h2");
-
-    titulo.textContent =
-        "MIS APUNTES";
-
-
-    const cerrar =
-        document.createElement("button");
-
-    cerrar.className =
-        "btn-cerrar";
-
-    cerrar.textContent =
-        "×";
-
-    cerrar.title =
-        "Cerrar";
-
-
-    cerrar.addEventListener(
-        "click",
-        function() {
-
-            volverAlContexto();
-
-            modal.remove();
-
-        }
-    );
-
-
-    encabezado.appendChild(
-        titulo
-    );
-
-    encabezado.appendChild(
-        cerrar
-    );
-
-    contenido.appendChild(
-        encabezado
-    );
-
-
-    if (
-        apuntes.length === 0
-    ) {
-
-        const vacio =
-            document.createElement("p");
-
-        vacio.textContent =
-            "Todavía no hay apuntes guardados.";
-
-        vacio.style.color =
-            "#9ca3af";
-
-        vacio.style.textAlign =
-            "center";
-
-        vacio.style.padding =
-            "30px 10px";
-
-
-        contenido.appendChild(
-            vacio
-        );
-    }
-
-
-    apuntes.forEach(
-        function(apunte) {
-
-            const item =
-                document.createElement(
-                    "button"
-                );
-
-
-            item.type =
-                "button";
-
-
-            item.style.width =
-                "100%";
-
-            item.style.textAlign =
-                "left";
-
-            item.style.padding =
-                "13px";
-
-            item.style.marginBottom =
-                "8px";
-
-            item.style.border =
-                "1px solid #1f2937";
-
-            item.style.borderRadius =
-                "10px";
-
-            item.style.background =
-                "#030712";
-
-            item.style.color =
-                "#e5e7eb";
-
-            item.style.cursor =
-                "pointer";
-
-
-            const materia =
-                document.createElement(
-                    "div"
-                );
-
-
-            materia.textContent =
-                apunte.materia;
-
-            materia.style.fontWeight =
-                "700";
-
-            materia.style.fontSize =
-                "14px";
-
-
-            const fechaApunte =
-                document.createElement(
-                    "div"
-                );
-
-
-            fechaApunte.textContent =
-                formatearFechaApunte(
-                    apunte.fecha_creacion
-                );
-
-            fechaApunte.style.color =
-                "#9ca3af";
-
-            fechaApunte.style.fontSize =
-                "12px";
-
-            fechaApunte.style.marginTop =
-                "4px";
-
-
-            const tituloApunte =
-                document.createElement(
-                    "div"
-                );
-
-
-            tituloApunte.textContent =
-                apunte.titulo ||
-                "Apunte";
-
-            tituloApunte.style.color =
-                "#d1d5db";
-
-            tituloApunte.style.fontSize =
-                "13px";
-
-            tituloApunte.style.marginTop =
-                "3px";
-
-
-            item.appendChild(
-                materia
-            );
-
-            item.appendChild(
-                fechaApunte
-            );
-
-            item.appendChild(
-                tituloApunte
-            );
-
-
-            item.addEventListener(
-                "click",
-                function() {
-
-                    cargarApunteAnterior(
-                        apunte
-                    );
-
-                    modal.remove();
-
-                }
-            );
-
-
-            contenido.appendChild(
-                item
-            );
-        }
-    );
-
-
-    const botonCerrar =
-        document.createElement(
-            "button"
-        );
-
-
-    botonCerrar.className =
-        "btn-modal-cerrar";
-
-    botonCerrar.textContent =
-        "CERRAR";
-
-
-    botonCerrar.addEventListener(
-        "click",
-        function() {
-
-            volverAlContexto();
-
-            modal.remove();
-
-        }
-    );
-
-
-    contenido.appendChild(
-        botonCerrar
-    );
-
-
-    modal.appendChild(
-        contenido
-    );
-
-
-    document.body.appendChild(
-        modal
-    );
-}
-
-
-/* =========================================
-   FORMATEAR FECHA
-   ========================================= */
-
-function formatearFechaApunte(
-    fechaTexto
-) {
-
-    if (!fechaTexto) {
-
-        return "";
-    }
-
-
-    const fecha =
-        new Date(
-            fechaTexto
-        );
-
-
-    if (
-        Number.isNaN(
-            fecha.getTime()
-        )
-    ) {
-
-        return "";
-    }
-
-
-    return fecha.toLocaleDateString(
-        "es-AR",
-        {
-            weekday: "short",
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric"
-        }
-    );
-}
-
-
-/* =========================================
-   CARGAR APUNTE ANTERIOR
-   ========================================= */
-
-function cargarApunteAnterior(
-    apunte
-) {
-
-    apunteActualId =
-        apunte.id;
-
-
-    materiaActual =
-        apunte.materia;
-
-
-    fechaCreacionActual =
-        apunte.fecha_creacion
-            ? new Date(
-                apunte.fecha_creacion
+            .eq(
+                "id",
+                contexto.id
             )
-            : new Date();
-
-
-    nota.value =
-        apunte.contenido || "";
-
-
-    actualizarContador();
-
-
-    materiaSeleccionada.textContent =
-        materiaActual;
-
-
-    materiaSeleccionada.style.color =
-        "#e5e7eb";
-
-
-    estado.textContent =
-        "Apunte anterior · " +
-        materiaActual;
-
-
-    mostrarMensaje(
-        "✓ Apunte cargado"
-    );
-
-
-    nota.focus();
-
-
-    crearBotonVolverActual();
-}
-
-
-/* =========================================
-   BOTÓN VOLVER AL APUNTE ACTUAL
-   ========================================= */
-
-function crearBotonVolverActual() {
-
-    eliminarBotonVolverActual();
-
-
-    const boton =
-        document.createElement(
-            "button"
-        );
-
-
-    boton.id =
-        "btnVolverActual";
-
-
-    boton.textContent =
-        "↩ VOLVER AL APUNTE ACTUAL";
-
-
-    boton.style.position =
-        "fixed";
-
-    boton.style.bottom =
-        "85px";
-
-    boton.style.left =
-        "50%";
-
-    boton.style.transform =
-        "translateX(-50%)";
-
-    boton.style.zIndex =
-        "200";
-
-    boton.style.height =
-        "42px";
-
-    boton.style.padding =
-        "0 16px";
-
-    boton.style.border =
-        "1px solid #374151";
-
-    boton.style.borderRadius =
-        "10px";
-
-    boton.style.background =
-        "#111827";
-
-    boton.style.color =
-        "#e5e7eb";
-
-    boton.style.fontSize =
-        "12px";
-
-    boton.style.fontWeight =
-        "700";
-
-    boton.style.cursor =
-        "pointer";
-
-
-    boton.addEventListener(
-        "click",
-        function() {
-
-            volverAlContexto();
-
-        }
-    );
-
-
-    document.body.appendChild(
-        boton
-    );
-}
-
-
-/* =========================================
-   ELIMINAR BOTÓN VOLVER
-   ========================================= */
-
-function eliminarBotonVolverActual() {
-
-    const boton =
-        document.getElementById(
-            "btnVolverActual"
-        );
-
-
-    if (boton) {
-
-        boton.remove();
-    }
-}
-
-
-/* =========================================
-   VOLVER AL APUNTE ACTUAL
-   ========================================= */
-
-async function volverAlContexto() {
-
-    eliminarBotonVolverActual();
+            .single();
 
 
     if (
-        !contextoApunteActual
+        !error &&
+        data
     ) {
-
-        return;
-    }
-
-
-    const contexto =
-        contextoApunteActual;
-
-
-    if (contexto.id) {
-
-        const { data, error } =
-            await supabaseClient
-                .from("apuntes")
-                .select(
-                    "id, materia, fecha_creacion, contenido"
-                )
-                .eq(
-                    "id",
-                    contexto.id
-                )
-                .single();
-
-
-        if (
-            !error &&
-            data
-        ) {
-
-            apunteActualId =
-                data.id;
-
-            materiaActual =
-                data.materia;
-
-            fechaCreacionActual =
-                data.fecha_creacion
-                    ? new Date(
-                        data.fecha_creacion
-                    )
-                    : new Date();
-
-
-            nota.value =
-                data.contenido || "";
-
-
-            actualizarContador();
-
-
-            materiaSeleccionada.textContent =
-                materiaActual;
-
-            materiaSeleccionada.style.color =
-                "#e5e7eb";
-
-
-            estado.textContent =
-                "Apunte actual · " +
-                materiaActual;
-
-
-            contextoApunteActual =
-                null;
-
-
-            mostrarMensaje(
-                "↩ Volviste al apunte actual"
-            );
-
-
-            nota.focus();
-
-            return;
-        }
-    }
-
-
-    apunteActualId =
-        contexto.id;
-
-
-    materiaActual =
-        contexto.materia;
-
-
-    fechaCreacionActual =
-        contexto.fechaCreacion
-            ? new Date(
-                contexto.fechaCreacion
-            )
-            : new Date();
-
-
-    nota.value =
-        contexto.contenido || "";
-
-
-    actualizarContador();
-
-
-    materiaSeleccionada.textContent =
-        materiaActual;
-
-
-    materiaSeleccionada.style.color =
-        "#e5e7eb";
-
-
-    estado.textContent =
-        "Apunte actual · " +
-        materiaActual;
-
-
-    contextoApunteActual =
-        null;
-
-
-    mostrarMensaje(
-        "↩ Volviste al apunte actual"
-    );
-
-
-    nota.focus();
-}
-
-
-/* =========================================
-   CONFIGURACIÓN
-   ========================================= */
-
-function abrirConfiguracion() {
-
-    menuMateria.classList.add(
-        "oculto"
-    );
-
-
-    mostrarMateriasConfiguracion(
-        obtenerMaterias()
-    );
-
-
-    modalConfiguracion.classList.remove(
-        "oculto"
-    );
-}
-
-
-function cerrarConfiguracion() {
-
-    modalConfiguracion.classList.add(
-        "oculto"
-    );
-
-
-    nota.focus();
-}
-
-
-btnCerrarConfiguracion.addEventListener(
-    "click",
-    cerrarConfiguracion
-);
-
-
-btnCerrarModal.addEventListener(
-    "click",
-    cerrarConfiguracion
-);
-
-
-/* =========================================
-   MOSTRAR CONFIGURACIÓN
-   ========================================= */
-
-function mostrarMateriasConfiguracion(
-    materias
-) {
-
-    listaMaterias.innerHTML = "";
-
-
-    materias.forEach(
-        function(
-            materia,
-            indice
-        ) {
-
-            const fila =
-                document.createElement(
-                    "div"
-                );
-
-
-            fila.className =
-                "materia-item";
-
-
-            const nombre =
-                document.createElement(
-                    "span"
-                );
-
-
-            nombre.className =
-                "materia-nombre";
-
-            nombre.textContent =
-                materia;
-
-
-            const acciones =
-                document.createElement(
-                    "div"
-                );
-
-
-            acciones.className =
-                "materia-acciones";
-
-
-            const editar =
-                document.createElement(
-                    "button"
-                );
-
-
-            editar.type =
-                "button";
-
-            editar.textContent =
-                "✏";
-
-            editar.title =
-                "Editar materia";
-
-
-            editar.addEventListener(
-                "click",
-                function() {
-
-                    editarMateria(
-                        indice
-                    );
-
-                }
-            );
-
-
-            const eliminar =
-                document.createElement(
-                    "button"
-                );
-
-
-            eliminar.type =
-                "button";
-
-            eliminar.textContent =
-                "×";
-
-            eliminar.title =
-                "Eliminar materia";
-
-
-            eliminar.addEventListener(
-                "click",
-                function() {
-
-                    eliminarMateria(
-                        indice
-                    );
-
-                }
-            );
-
-
-            acciones.appendChild(
-                editar
-            );
-
-            acciones.appendChild(
-                eliminar
-            );
-
-
-            fila.appendChild(
-                nombre
-            );
-
-            fila.appendChild(
-                acciones
-            );
-
-
-            listaMaterias.appendChild(
-                fila
-            );
-        }
-    );
-}
-
-
-/* =========================================
-   AGREGAR MATERIA
-   ========================================= */
-
-btnAgregarMateria.addEventListener(
-    "click",
-    agregarMateria
-);
-
-
-nuevaMateria.addEventListener(
-    "keydown",
-    function(event) {
-
-        if (
-            event.key === "Enter"
-        ) {
-
-            agregarMateria();
-        }
-    }
-);
-
-
-function agregarMateria() {
-
-    const nombre =
-        nuevaMateria.value
-            .trim()
-            .toUpperCase();
-
-
-    if (
-        nombre === ""
-    ) {
-
-        return;
-    }
-
-
-    let materias =
-        obtenerMaterias();
-
-
-    const existe =
-        materias.some(
-            function(materia) {
-
-                return materia === nombre;
-
-            }
-        );
-
-
-    if (existe) {
-
-        alert(
-            "Esa materia ya existe."
-        );
-
-        return;
-    }
-
-
-    materias.push(
-        nombre
-    );
-
-
-    guardarMaterias(
-        materias
-    );
-
-
-    nuevaMateria.value =
-        "";
-
-
-    cargarMaterias();
-
-
-    mostrarMateriasConfiguracion(
-        materias
-    );
-}
-
-
-/* =========================================
-   EDITAR MATERIA
-   ========================================= */
-
-function editarMateria(
-    indice
-) {
-
-    let materias =
-        obtenerMaterias();
-
-
-    const actual =
-        materias[indice];
-
-
-    const nuevoNombre =
-        prompt(
-            "Nuevo nombre de la materia:",
-            actual
-        );
-
-
-    if (
-        nuevoNombre === null
-    ) {
-
-        return;
-    }
-
-
-    const nombre =
-        nuevoNombre
-            .trim()
-            .toUpperCase();
-
-
-    if (
-        nombre === ""
-    ) {
-
-        return;
-    }
-
-
-    const existe =
-        materias.some(
-            function(
-                materia,
-                i
-            ) {
-
-                return (
-                    i !== indice &&
-                    materia === nombre
-                );
-
-            }
-        );
-
-
-    if (existe) {
-
-        alert(
-            "Esa materia ya existe."
-        );
-
-        return;
-    }
-
-
-    materias[indice] =
-        nombre;
-
-
-    guardarMaterias(
-        materias
-    );
-
-
-    if (
-        materiaActual === actual
-    ) {
-
-        materiaActual =
-            nombre;
-
-
-        materiaSeleccionada.textContent =
-            nombre;
-
-
-        estado.textContent =
-            "Apunte actual · " +
-            nombre;
-    }
-
-
-    cargarMaterias();
-
-
-    mostrarMateriasConfiguracion(
-        materias
-    );
-}
-
-
-/* =========================================
-   ELIMINAR MATERIA
-   ========================================= */
-
-function eliminarMateria(
-    indice
-) {
-
-    let materias =
-        obtenerMaterias();
-
-
-    if (
-        materias.length <= 1
-    ) {
-
-        alert(
-            "Debe quedar al menos una materia."
-        );
-
-        return;
-    }
-
-
-    const materia =
-        materias[indice];
-
-
-    const confirmar =
-        confirm(
-            "¿Querés eliminar " +
-            materia +
-            "?"
-        );
-
-
-    if (!confirmar) {
-
-        return;
-    }
-
-
-    materias.splice(
-        indice,
-        1
-    );
-
-
-    guardarMaterias(
-        materias
-    );
-
-
-    if (
-        materiaActual === materia
-    ) {
-
-        materiaActual =
-            "";
 
         apunteActualId =
-            null;
+            data.id;
+
+        materiaActual =
+            data.materia;
 
         fechaCreacionActual =
-            null;
+            data.fecha_creacion
+                ? new Date(
+                    data.fecha_creacion
+                )
+                : new Date();
+
 
         nota.value =
-            "";
+            data.contenido || "";
+
 
         actualizarContador();
 
 
         materiaSeleccionada.textContent =
-            "Seleccionar";
+            materiaActual;
 
 
         materiaSeleccionada.style.color =
-            "#9ca3af";
+            "#e5e7eb";
 
 
         estado.textContent =
-            "Nueva captura";
+            "Apunte actual · " +
+            materiaActual;
 
 
-        eliminarBotonVolverActual();
+        contextoApunteActual =
+            null;
+
+
+        mostrarMensaje(
+            "↩ Volviste al apunte actual"
+        );
+
+
+        nota.focus();
+
+        return;
     }
-
-
-    cargarMaterias();
-
-
-    mostrarMateriasConfiguracion(
-        materias
-    );
 }
 
+
+/*
+   Si todavía no existía en Supabase,
+   recuperamos lo que había en pantalla.
+*/
+
+apunteActualId =
+    contexto.id;
+
+
+materiaActual =
+    contexto.materia;
+
+
+fechaCreacionActual =
+    contexto.fechaCreacion
+        ? new Date(
+            contexto.fechaCreacion
+        )
+        : new Date();
+
+
+nota.value =
+    contexto.contenido || "";
+
+
+actualizarContador();
+
+
+materiaSeleccionada.textContent =
+    materiaActual;
+
+
+materiaSeleccionada.style.color =
+    "#e5e7eb";
+
+
+estado.textContent =
+    "Apunte actual · " +
+    materiaActual;
+
+
+contextoApunteActual =
+    null;
+
+
+mostrarMensaje(
+    "↩ Volviste al apunte actual"
+);
+
+
+nota.focus();
+```
+
+}
 
 /* =========================================
-   EXPANSIÓN DEL ÁREA DE ESCRITURA
-   ========================================= */
+CONFIGURACIÓN
+========================================= */
 
-function iniciarExpansionEscritura() {
+function abrirConfiguracion() {
 
-    const contenido =
-        document.querySelector(
-            ".contenido"
-        );
-
-
-    if (!contenido || !nota) {
-
-        return;
-    }
+```
+menuMateria.classList.add(
+    "oculto"
+);
 
 
-    /*
-       COMPUTADORA:
-       doble clic sobre el área de escritura.
-    */
-
-    nota.addEventListener(
-        "dblclick",
-        function() {
-
-            alternarExpansionEscritura();
-
-        }
-    );
+mostrarMateriasConfiguracion(
+    obtenerMaterias()
+);
 
 
-    /*
-       PANTALLA TÁCTIL:
-       doble toque sobre el área de escritura.
-    */
+modalConfiguracion.classList.remove(
+    "oculto"
+);
+```
 
-    let ultimoToque = 0;
-
-
-    nota.addEventListener(
-        "touchend",
-        function(event) {
-
-            const ahora =
-                Date.now();
-
-
-            const diferencia =
-                ahora - ultimoToque;
-
-
-            if (
-                diferencia > 0 &&
-                diferencia < 350
-            ) {
-
-                event.preventDefault();
-
-                alternarExpansionEscritura();
-
-                ultimoToque = 0;
-
-                return;
-            }
-
-
-            ultimoToque =
-                ahora;
-        },
-        {
-            passive: false
-        }
-    );
 }
 
+function cerrarConfiguracion() {
 
-function alternarExpansionEscritura() {
-
-    const contenido =
-        document.querySelector(
-            ".contenido"
-        );
-
-
-    if (!contenido) {
-
-        return;
-    }
+```
+modalConfiguracion.classList.add(
+    "oculto"
+);
 
 
-    contenido.classList.toggle(
-        "contenido-expandido"
-    );
+nota.focus();
+```
+
+}
+
+btnCerrarConfiguracion.addEventListener(
+"click",
+cerrarConfiguracion
+);
+
+btnCerrarModal.addEventListener(
+"click",
+cerrarConfiguracion
+);
+
+/* =========================================
+MOSTRAR CONFIGURACIÓN
+========================================= */
+
+function mostrarMateriasConfiguracion(
+materias
+) {
+
+```
+listaMaterias.innerHTML = "";
 
 
-    /*
-       Dejamos nuevamente el cursor
-       dentro del apunte.
-    */
-
-    nota.focus();
-
-
-    if (
-        contenido.classList.contains(
-            "contenido-expandido"
-        )
+materias.forEach(
+    function(
+        materia,
+        indice
     ) {
 
-        console.log(
-            "Área de escritura expandida."
+        const fila =
+            document.createElement(
+                "div"
+            );
+
+
+        fila.className =
+            "materia-item";
+
+
+        const nombre =
+            document.createElement(
+                "span"
+            );
+
+
+        nombre.className =
+            "materia-nombre";
+
+        nombre.textContent =
+            materia;
+
+
+        const acciones =
+            document.createElement(
+                "div"
+            );
+
+
+        acciones.className =
+            "materia-acciones";
+
+
+        const editar =
+            document.createElement(
+                "button"
+            );
+
+
+        editar.type =
+            "button";
+
+        editar.textContent =
+            "✏";
+
+        editar.title =
+            "Editar materia";
+
+
+        editar.addEventListener(
+            "click",
+            function() {
+
+                editarMateria(
+                    indice
+                );
+
+            }
         );
 
-    } else {
 
-        console.log(
-            "Área de escritura normal."
+        const eliminar =
+            document.createElement(
+                "button"
+            );
+
+
+        eliminar.type =
+            "button";
+
+        eliminar.textContent =
+            "×";
+
+        eliminar.title =
+            "Eliminar materia";
+
+
+        eliminar.addEventListener(
+            "click",
+            function() {
+
+                eliminarMateria(
+                    indice
+                );
+
+            }
+        );
+
+
+        acciones.appendChild(
+            editar
+        );
+
+        acciones.appendChild(
+            eliminar
+        );
+
+
+        fila.appendChild(
+            nombre
+        );
+
+        fila.appendChild(
+            acciones
+        );
+
+
+        listaMaterias.appendChild(
+            fila
         );
     }
+);
+```
+
+}
+
+/* =========================================
+AGREGAR MATERIA
+========================================= */
+
+btnAgregarMateria.addEventListener(
+"click",
+agregarMateria
+);
+
+nuevaMateria.addEventListener(
+"keydown",
+function(event) {
+
+```
+    if (
+        event.key === "Enter"
+    ) {
+
+        agregarMateria();
+    }
+}
+```
+
+);
+
+function agregarMateria() {
+
+```
+const nombre =
+    nuevaMateria.value
+        .trim()
+        .toUpperCase();
+
+
+if (
+    nombre === ""
+) {
+
+    return;
 }
 
 
+let materias =
+    obtenerMaterias();
+
+
+const existe =
+    materias.some(
+        function(materia) {
+
+            return materia === nombre;
+
+        }
+    );
+
+
+if (
+    existe
+) {
+
+    alert(
+        "Esa materia ya existe."
+    );
+
+    return;
+}
+
+
+materias.push(
+    nombre
+);
+
+
+guardarMaterias(
+    materias
+);
+
+
+nuevaMateria.value =
+    "";
+
+
+cargarMaterias();
+
+
+mostrarMateriasConfiguracion(
+    materias
+);
+```
+
+}
+
 /* =========================================
-   PROTECCIÓN AL SALIR
-   ========================================= */
+EDITAR MATERIA
+========================================= */
 
-window.addEventListener(
-    "beforeunload",
-    function() {
+function editarMateria(
+indice
+) {
 
-        if (
-            nota.value.trim() !== "" &&
-            materiaActual !== ""
+```
+let materias =
+    obtenerMaterias();
+
+
+const actual =
+    materias[indice];
+
+
+const nuevoNombre =
+    prompt(
+        "Nuevo nombre de la materia:",
+        actual
+    );
+
+
+if (
+    nuevoNombre === null
+) {
+
+    return;
+}
+
+
+const nombre =
+    nuevoNombre
+        .trim()
+        .toUpperCase();
+
+
+if (
+    nombre === ""
+) {
+
+    return;
+}
+
+
+const existe =
+    materias.some(
+        function(
+            materia,
+            i
         ) {
 
-            console.log(
-                "Hay cambios en el apunte."
+            return (
+                i !== indice &&
+                materia === nombre
             );
+
         }
+    );
+
+
+if (
+    existe
+) {
+
+    alert(
+        "Esa materia ya existe."
+    );
+
+    return;
+}
+
+
+materias[indice] =
+    nombre;
+
+
+guardarMaterias(
+    materias
+);
+
+
+if (
+    materiaActual === actual
+) {
+
+    materiaActual =
+        nombre;
+
+
+    materiaSeleccionada.textContent =
+        nombre;
+
+
+    estado.textContent =
+        "Apunte actual · " +
+        nombre;
+}
+
+
+cargarMaterias();
+
+
+mostrarMateriasConfiguracion(
+    materias
+);
+```
+
+}
+
+/* =========================================
+ELIMINAR MATERIA
+========================================= */
+
+function eliminarMateria(
+indice
+) {
+
+```
+let materias =
+    obtenerMaterias();
+
+
+if (
+    materias.length <= 1
+) {
+
+    alert(
+        "Debe quedar al menos una materia."
+    );
+
+    return;
+}
+
+
+const materia =
+    materias[indice];
+
+
+const confirmar =
+    confirm(
+        "¿Querés eliminar " +
+        materia +
+        "?"
+    );
+
+
+if (
+    !confirmar
+) {
+
+    return;
+}
+
+
+materias.splice(
+    indice,
+    1
+);
+
+
+guardarMaterias(
+    materias
+);
+
+
+if (
+    materiaActual === materia
+) {
+
+    materiaActual =
+        "";
+
+    apunteActualId =
+        null;
+
+    fechaCreacionActual =
+        null;
+
+    nota.value =
+        "";
+
+
+    actualizarContador();
+
+
+    materiaSeleccionada.textContent =
+        "Seleccionar";
+
+
+    materiaSeleccionada.style.color =
+        "#9ca3af";
+
+
+    estado.textContent =
+        "Nueva captura";
+
+
+    eliminarBotonVolverActual();
+
+
+    eliminarBorradorLocal();
+}
+
+
+cargarMaterias();
+
+
+mostrarMateriasConfiguracion(
+    materias
+);
+```
+
+}
+
+/* =========================================
+PROTECCIÓN AL SALIR
+========================================= */
+
+window.addEventListener(
+"beforeunload",
+function() {
+
+```
+    /*
+       No intentamos hacer una petición
+       a Supabase aquí.
+
+       En su lugar dejamos el texto
+       guardado localmente, que es mucho
+       más seguro ante un cierre abrupto.
+    */
+
+    if (
+        nota.value.trim() !== "" &&
+        materiaActual !== ""
+    ) {
+
+        guardarBorradorLocal();
     }
+}
+```
+
 );
