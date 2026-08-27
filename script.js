@@ -6,8 +6,9 @@
    - VOLVER AL APUNTE ACTUAL
    - AUTOGUARDADO
    - COPIA LOCAL DE SEGURIDAD
-   - COMPARTIR / IA / RESALTADOR
-   - GUARDAR
+   - COMPARTIR
+   - RESALTADOR
+   - IA
    ========================================= */
 
 
@@ -42,7 +43,9 @@ const fecha =
     document.getElementById("fecha");
 
 const materiaSeleccionada =
-    document.getElementById("materiaSeleccionada");
+    document.getElementById(
+        "materiaSeleccionada"
+    );
 
 const nota =
     document.getElementById("nota");
@@ -56,35 +59,47 @@ const estado =
 const mensaje =
     document.getElementById("mensaje");
 
-const btnGuardar =
-    document.getElementById("btnGuardar");
-
 const btnCompartir =
     document.getElementById("btnCompartir");
-
-const btnIA =
-    document.getElementById("btnIA");
 
 const btnResaltador =
     document.getElementById("btnResaltador");
 
+const btnIA =
+    document.getElementById("btnIA");
+
+const btnGuardar =
+    document.getElementById("btnGuardar");
+
 const modalConfiguracion =
-    document.getElementById("modalConfiguracion");
+    document.getElementById(
+        "modalConfiguracion"
+    );
 
 const btnCerrarConfiguracion =
-    document.getElementById("btnCerrarConfiguracion");
+    document.getElementById(
+        "btnCerrarConfiguracion"
+    );
 
 const btnCerrarModal =
-    document.getElementById("btnCerrarModal");
+    document.getElementById(
+        "btnCerrarModal"
+    );
 
 const listaMaterias =
-    document.getElementById("listaMaterias");
+    document.getElementById(
+        "listaMaterias"
+    );
 
 const nuevaMateria =
-    document.getElementById("nuevaMateria");
+    document.getElementById(
+        "nuevaMateria"
+    );
 
 const btnAgregarMateria =
-    document.getElementById("btnAgregarMateria");
+    document.getElementById(
+        "btnAgregarMateria"
+    );
 
 
 /* =========================================
@@ -125,6 +140,8 @@ async function iniciar() {
 
     actualizarContador();
 
+    prepararBotones();
+
     iniciarGuardadoAutomatico();
 
     console.log(
@@ -134,12 +151,108 @@ async function iniciar() {
 
 
 /* =========================================
+   PREPARAR BOTONES
+   ========================================= */
+
+function prepararBotones() {
+
+    /*
+       Los cuatro botones tienen exactamente
+       el mismo tamaño.
+    */
+
+    const botones = [
+        btnCompartir,
+        btnResaltador,
+        btnIA,
+        btnGuardar
+    ];
+
+    botones.forEach(
+        function(boton) {
+
+            if (!boton) {
+                return;
+            }
+
+            boton.classList.add("btn");
+
+            boton.style.flex = "1";
+
+            boton.style.minWidth = "0";
+        }
+    );
+
+
+    /*
+       COMPARTIR
+       Todavía sin función.
+    */
+
+    if (btnCompartir) {
+
+        btnCompartir.addEventListener(
+            "click",
+            function() {
+
+                mostrarMensaje(
+                    "Compartir próximamente."
+                );
+
+            }
+        );
+    }
+
+
+    /*
+       RESALTADOR
+       Todavía sin función.
+    */
+
+    if (btnResaltador) {
+
+        btnResaltador.addEventListener(
+            "click",
+            function() {
+
+                mostrarMensaje(
+                    "Resaltador próximamente."
+                );
+
+            }
+        );
+    }
+
+
+    /*
+       IA
+       Todavía sin función.
+    */
+
+    if (btnIA) {
+
+        btnIA.addEventListener(
+            "click",
+            function() {
+
+                mostrarMensaje(
+                    "IA próximamente."
+                );
+
+            }
+        );
+    }
+}
+
+
+/* =========================================
    FECHA
    ========================================= */
 
 function actualizarFecha() {
 
-    const ahora = new Date();
+    const ahora =
+        new Date();
 
     const opciones = {
         weekday: "long",
@@ -162,7 +275,8 @@ function actualizarFecha() {
 
 function obtenerInicioDelDia() {
 
-    const ahora = new Date();
+    const ahora =
+        new Date();
 
     return new Date(
         ahora.getFullYear(),
@@ -182,7 +296,8 @@ function obtenerInicioDelDia() {
 
 function obtenerFinDelDia() {
 
-    const ahora = new Date();
+    const ahora =
+        new Date();
 
     return new Date(
         ahora.getFullYear(),
@@ -820,7 +935,8 @@ function guardarBorradorLocal() {
 
     /*
        Si no hay texto,
-       eliminamos cualquier borrador.
+       eliminamos cualquier borrador
+       de esta materia.
     */
 
     if (
@@ -943,7 +1059,7 @@ function recuperarBorradorLocal(
 
     /*
        Si ya existe un apunte en Supabase,
-       solamente recuperamos el borrador
+       recuperamos el borrador solamente
        si es más nuevo.
     */
 
@@ -1183,11 +1299,6 @@ async function guardarNota(
             );
 
 
-            /*
-               Si falla Supabase,
-               dejamos el borrador local.
-            */
-
             guardarBorradorLocal();
 
 
@@ -1218,11 +1329,6 @@ async function guardarNota(
                 data.fecha_creacion
             );
 
-
-        /*
-           Ya no necesitamos la copia
-           de seguridad local.
-        */
 
         eliminarBorradorLocal();
 
@@ -1287,11 +1393,6 @@ async function guardarNota(
             error
         );
 
-
-        /*
-           Si no pudo actualizar Supabase,
-           conservamos el borrador local.
-        */
 
         guardarBorradorLocal();
 
@@ -1411,73 +1512,6 @@ function iniciarGuardadoAutomatico() {
             },
             5 * 60 * 1000
         );
-}
-
-
-/* =========================================
-   BOTONES NUEVOS
-   ========================================= */
-
-/*
-   COMPARTIR
-
-   Todavía sin función.
-*/
-
-if (btnCompartir) {
-
-    btnCompartir.addEventListener(
-        "click",
-        function() {
-
-            /*
-               Reservado para futura función.
-            */
-
-        }
-    );
-}
-
-
-/*
-   IA
-
-   Todavía sin función.
-*/
-
-if (btnIA) {
-
-    btnIA.addEventListener(
-        "click",
-        function() {
-
-            /*
-               Reservado para futura función.
-            */
-
-        }
-    );
-}
-
-
-/*
-   RESALTADOR
-
-   Todavía sin función.
-*/
-
-if (btnResaltador) {
-
-    btnResaltador.addEventListener(
-        "click",
-        function() {
-
-            /*
-               Reservado para futura función.
-            */
-
-        }
-    );
 }
 
 
@@ -2504,7 +2538,7 @@ function agregarMateria() {
    EDITAR MATERIA
    ========================================= */
 
-async function editarMateria(
+function editarMateria(
     indice
 ) {
 
@@ -2573,66 +2607,6 @@ async function editarMateria(
     }
 
 
-    /*
-       Si estamos cambiando el nombre de una
-       materia existente, primero preguntamos
-       si quiere eliminar sus apuntes de Supabase.
-    */
-
-    if (
-        actual !== nombre
-    ) {
-
-        const confirmar =
-            confirm(
-                "Al cambiar el nombre de la materia se eliminarán los apuntes asociados a \"" +
-                actual +
-                "\" de Supabase.\n\n¿Querés continuar?"
-            );
-
-
-        if (
-            !confirmar
-        ) {
-
-            return;
-        }
-
-
-        /*
-           Eliminamos los apuntes asociados
-           a la materia anterior.
-        */
-
-        const { error } =
-            await supabaseClient
-                .from("apuntes")
-                .delete()
-                .eq(
-                    "materia",
-                    actual
-                );
-
-
-        if (
-            error
-        ) {
-
-            console.error(
-                "Error eliminando apuntes de la materia:",
-                error
-            );
-
-
-            alert(
-                "No se pudo cambiar el nombre porque no se pudieron eliminar los apuntes anteriores."
-            );
-
-            return;
-        }
-    }
-
-
     materias[indice] =
         nombre;
 
@@ -2650,35 +2624,13 @@ async function editarMateria(
             nombre;
 
 
-        apunteActualId =
-            null;
-
-
-        fechaCreacionActual =
-            new Date();
-
-
-        nota.value =
-            "";
-
-
-        actualizarContador();
-
-
         materiaSeleccionada.textContent =
             nombre;
 
 
-        materiaSeleccionada.style.color =
-            "#e5e7eb";
-
-
         estado.textContent =
-            "Nuevo apunte · " +
+            "Apunte actual · " +
             nombre;
-
-
-        eliminarBorradorLocal();
     }
 
 
@@ -2688,11 +2640,6 @@ async function editarMateria(
     mostrarMateriasConfiguracion(
         materias
     );
-
-
-    mostrarMensaje(
-        "✓ Materia modificada"
-    );
 }
 
 
@@ -2700,7 +2647,7 @@ async function editarMateria(
    ELIMINAR MATERIA
    ========================================= */
 
-async function eliminarMateria(
+function eliminarMateria(
     indice
 ) {
 
@@ -2728,46 +2675,13 @@ async function eliminarMateria(
         confirm(
             "¿Querés eliminar " +
             materia +
-            "?\n\nTambién se eliminarán sus apuntes guardados en Supabase."
+            "?"
         );
 
 
     if (
         !confirmar
     ) {
-
-        return;
-    }
-
-
-    /*
-       Eliminamos primero los apuntes
-       asociados en Supabase.
-    */
-
-    const { error } =
-        await supabaseClient
-            .from("apuntes")
-            .delete()
-            .eq(
-                "materia",
-                materia
-            );
-
-
-    if (
-        error
-    ) {
-
-        console.error(
-            "Error eliminando apuntes:",
-            error
-        );
-
-
-        alert(
-            "No se pudo eliminar la materia porque hubo un error al eliminar sus apuntes."
-        );
 
         return;
     }
@@ -2828,11 +2742,6 @@ async function eliminarMateria(
 
     mostrarMateriasConfiguracion(
         materias
-    );
-
-
-    mostrarMensaje(
-        "✓ Materia eliminada"
     );
 }
 
