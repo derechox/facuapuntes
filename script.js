@@ -1,9 +1,9 @@
 /* =========================================
-   FACU-APUNTES
-   SUPABASE + APUNTES ANTERIORES
+   MIS APUNTES
+   SUPABASE + APUNTES CONTINUOS
 
-   - UN APUNTE POR MATERIA Y POR DÍA
-   - VOLVER AL APUNTE ACTUAL
+   - UN APUNTE CONTINUO POR MATERIA
+   - FECHA Y HORA UNA SOLA VEZ POR DÍA
    - AUTOGUARDADO
    - COPIA LOCAL DE SEGURIDAD
    - RECUPERAR ÚLTIMA MATERIA
@@ -82,7 +82,7 @@ const btnAgregarMateria =
 
 
 /* =========================================
-   BOTONES NUEVOS
+   BOTONES
    ========================================= */
 
 const btnCompartir =
@@ -107,8 +107,6 @@ let fechaCreacionActual = null;
 
 let guardadoAutomatico = null;
 
-let contextoApunteActual = null;
-
 let cargandoApunte = false;
 
 
@@ -131,7 +129,7 @@ async function iniciar() {
 
 
     console.log(
-        "Facu Apuntes iniciado."
+        "Mis Apuntes iniciado."
     );
 
 
@@ -173,7 +171,7 @@ async function iniciar() {
             "#e5e7eb";
 
 
-        await cargarApunteDeHoy(
+        await cargarApunteContinuo(
             ultimaMateria
         );
 
@@ -192,7 +190,7 @@ async function iniciar() {
 
 
 /* =========================================
-   FECHA
+   FECHA DEL ENCABEZADO SUPERIOR
    ========================================= */
 
 function actualizarFecha() {
@@ -265,72 +263,232 @@ function obtenerFechaDia() {
 
 
 /* =========================================
-   INICIO DEL DÍA
+   FECHA PARA MOSTRAR DENTRO DEL APUNTE
    ========================================= */
 
-function obtenerInicioDelDia() {
+function obtenerFechaVisible() {
 
     const ahora =
         new Date();
 
 
-    return new Date(
+    const dia =
+        String(
+            ahora.getDate()
+        ).padStart(
+            2,
+            "0"
+        );
 
-        ahora.getFullYear(),
 
-        ahora.getMonth(),
+    const mes =
+        String(
+            ahora.getMonth() + 1
+        ).padStart(
+            2,
+            "0"
+        );
 
-        ahora.getDate(),
 
-        0,
-        0,
-        0,
-        0
+    const año =
+        ahora.getFullYear();
 
+
+    return (
+        dia +
+        "/" +
+        mes +
+        "/" +
+        año
     );
 }
 
 
 /* =========================================
-   FIN DEL DÍA
+   HORA PARA MOSTRAR DENTRO DEL APUNTE
    ========================================= */
 
-function obtenerFinDelDia() {
+function obtenerHoraVisible() {
 
     const ahora =
         new Date();
 
 
-    return new Date(
+    const horas =
+        String(
+            ahora.getHours()
+        ).padStart(
+            2,
+            "0"
+        );
 
-        ahora.getFullYear(),
 
-        ahora.getMonth(),
+    const minutos =
+        String(
+            ahora.getMinutes()
+        ).padStart(
+            2,
+            "0"
+        );
 
-        ahora.getDate(),
 
-        23,
-        59,
-        59,
-        999
-
+    return (
+        horas +
+        ":" +
+        minutos
     );
+}
+
+
+/* =========================================
+   ENCABEZADO DEL DÍA
+   ========================================= */
+
+function obtenerEncabezadoDelDia() {
+
+    return (
+        obtenerFechaVisible() +
+        " - " +
+        obtenerHoraVisible()
+    );
+}
+
+
+/* =========================================
+   COMPROBAR SI YA EXISTE EL ENCABEZADO
+   DEL DÍA ACTUAL
+   ========================================= */
+
+function tieneEncabezadoDeHoy(contenido) {
+
+    if (
+        !contenido
+    ) {
+
+        return false;
+    }
+
+
+    const fechaHoy =
+        obtenerFechaVisible();
+
+
+    const patron =
+        new RegExp(
+            "(^|\\n)" +
+            fechaHoy.replace(
+                /\//g,
+                "\\/"
+            ) +
+            "\\s*-\\s*\\d{2}:\\d{2}"
+        );
+
+
+    return patron.test(
+        contenido
+    );
+}
+
+
+/* =========================================
+   AGREGAR ENCABEZADO DEL DÍA
+   ========================================= */
+
+function asegurarEncabezadoDelDia() {
+
+    if (
+        cargandoApunte
+    ) {
+
+        return false;
+    }
+
+
+    if (
+        materiaActual === ""
+    ) {
+
+        return false;
+    }
+
+
+    const contenido =
+        nota.value;
+
+
+    if (
+        tieneEncabezadoDeHoy(
+            contenido
+        )
+    ) {
+
+        return false;
+    }
+
+
+    const encabezado =
+        obtenerEncabezadoDelDia();
+
+
+    /*
+       Si no hay contenido,
+       comenzamos directamente
+       con fecha y hora.
+    */
+
+    if (
+        contenido.trim() === ""
+    ) {
+
+        nota.value =
+            encabezado +
+            "\n\n";
+
+    } else {
+
+        /*
+           Si ya hay contenido de días
+           anteriores, agregamos el
+           nuevo día al final.
+        */
+
+        const separador =
+            contenido.endsWith("\n")
+                ? "\n"
+                : "\n\n";
+
+
+        nota.value =
+            contenido +
+            separador +
+            encabezado +
+            "\n\n";
+    }
+
+
+    /*
+       Dejamos el cursor al final.
+    */
+
+    nota.selectionStart =
+        nota.value.length;
+
+    nota.selectionEnd =
+        nota.value.length;
+
+
+    actualizarContador();
+
+    guardarBorradorLocal();
+
+
+    return true;
 }
 
 
 /* =========================================
    MATERIAS
    ========================================= */
-
-/*
-   IMPORTANTE:
-
-   localStorage sigue funcionando como
-   copia local.
-
-   Supabase es el lugar donde se sincronizan
-   las materias entre dispositivos.
-*/
 
 async function cargarMaterias() {
 
@@ -525,6 +683,7 @@ async function cargarMaterias() {
     }
 }
 
+
 function guardarMaterias(
     materias
 ) {
@@ -539,6 +698,7 @@ function guardarMaterias(
 
     );
 }
+
 
 function obtenerMaterias() {
 
@@ -607,65 +767,9 @@ function mostrarMateriasMenu(
     );
 
 
-    /* -----------------------------------------
-       APUNTES ANTERIORES
-       ----------------------------------------- */
-
-    const separadorApuntes =
-        document.createElement(
-            "div"
-        );
-
-
-    separadorApuntes.className =
-        "separador";
-
-
-    menuMateria.appendChild(
-        separadorApuntes
-    );
-
-
-    const apuntesAnteriores =
-        document.createElement(
-            "button"
-        );
-
-
-    apuntesAnteriores.type =
-        "button";
-
-
-    apuntesAnteriores.textContent =
-        "📚 APUNTES ANTERIORES";
-
-
-    apuntesAnteriores.addEventListener(
-        "click",
-        function() {
-
-            guardarContextoActual();
-
-
-            menuMateria.classList.add(
-                "oculto"
-            );
-
-
-            abrirApuntesAnteriores();
-
-        }
-    );
-
-
-    menuMateria.appendChild(
-        apuntesAnteriores
-    );
-
-
-    /* -----------------------------------------
+    /*
        CONFIGURACIÓN
-       ----------------------------------------- */
+    */
 
     const separadorConfiguracion =
         document.createElement(
@@ -708,51 +812,6 @@ function mostrarMateriasMenu(
 
     menuMateria.appendChild(
         configuracion
-    );
-}
-
-
-/* =========================================
-   CONTEXTO DEL APUNTE ACTUAL
-   ========================================= */
-
-function guardarContextoActual() {
-
-    if (
-        materiaActual === "" &&
-        nota.value.trim() === ""
-    ) {
-
-        contextoApunteActual =
-            null;
-
-
-        return;
-    }
-
-
-    contextoApunteActual = {
-
-        id:
-            apunteActualId,
-
-        materia:
-            materiaActual,
-
-        contenido:
-            nota.value,
-
-        fechaCreacion:
-            fechaCreacionActual
-                ? fechaCreacionActual.toISOString()
-                : null
-
-    };
-
-
-    console.log(
-        "Contexto guardado:",
-        contextoApunteActual
     );
 }
 
@@ -818,28 +877,34 @@ async function seleccionarMateria(
     }
 
 
-    await cargarApunteDeHoy(
+    await cargarApunteContinuo(
         materia
     );
 }
 
 
 /* =========================================
-   CARGAR APUNTE DE HOY
+   CARGAR APUNTE CONTINUO
    ========================================= */
 
-async function cargarApunteDeHoy(
+async function cargarApunteContinuo(
     materia
 ) {
 
     estado.textContent =
-        "Buscando apunte de hoy · " +
+        "Buscando apunte · " +
         materia;
 
 
-    const fechaDia =
-        obtenerFechaDia();
+    /*
+       IMPORTANTE:
 
+       Ya NO buscamos por fecha.
+
+       Buscamos el último apunte de
+       esa materia para mantenerlo
+       como archivo continuo.
+    */
 
     const {
         data,
@@ -858,9 +923,11 @@ async function cargarApunteDeHoy(
                 materia
             )
 
-            .eq(
-                "fecha_dia",
-                fechaDia
+            .order(
+                "fecha_modificacion",
+                {
+                    ascending: false
+                }
             )
 
             .limit(1);
@@ -869,7 +936,7 @@ async function cargarApunteDeHoy(
     if (error) {
 
         console.error(
-            "Error buscando apunte de hoy:",
+            "Error buscando apunte:",
             error
         );
 
@@ -883,7 +950,7 @@ async function cargarApunteDeHoy(
 
 
         mostrarMensaje(
-            "No se pudo consultar el apunte de hoy."
+            "No se pudo consultar el apunte."
         );
 
 
@@ -901,8 +968,7 @@ async function cargarApunteDeHoy(
 
 
         cargarApunteEnPantalla(
-            apunte,
-            "Apunte de hoy · "
+            apunte
         );
 
 
@@ -975,9 +1041,6 @@ function iniciarNuevoApunteSinGuardar() {
             : "Nueva captura";
 
 
-    eliminarBotonVolverActual();
-
-
     cargandoApunte = false;
 
 
@@ -990,8 +1053,7 @@ function iniciarNuevoApunteSinGuardar() {
    ========================================= */
 
 function cargarApunteEnPantalla(
-    apunte,
-    textoEstado
+    apunte
 ) {
 
     cargandoApunte = true;
@@ -1029,7 +1091,7 @@ function cargarApunteEnPantalla(
 
 
     estado.textContent =
-        textoEstado +
+        "Apunte · " +
         materiaActual;
 
 
@@ -1055,7 +1117,19 @@ function cargarApunteEnPantalla(
     cargandoApunte = false;
 
 
+    /*
+       Cursor al final del archivo
+       continuo.
+    */
+
     nota.focus();
+
+
+    nota.selectionStart =
+        nota.value.length;
+
+    nota.selectionEnd =
+        nota.value.length;
 }
 
 
@@ -1112,6 +1186,43 @@ nota.addEventListener(
 
 
 /* =========================================
+   FECHA ANTES DE ESCRIBIR
+   ========================================= */
+
+nota.addEventListener(
+    "beforeinput",
+    function(event) {
+
+        /*
+           Solo nos interesa cuando el
+           usuario está agregando contenido.
+
+           No agregamos fechas al borrar.
+        */
+
+        const tiposDeEntrada =
+            [
+                "insertText",
+                "insertReplacementText",
+                "insertFromPaste",
+                "insertFromDrop"
+            ];
+
+
+        if (
+            tiposDeEntrada.includes(
+                event.inputType
+            )
+        ) {
+
+            asegurarEncabezadoDelDia();
+
+        }
+    }
+);
+
+
+/* =========================================
    EXPANDIR HORIZONTALMENTE
    DOBLE CLIC
    ========================================= */
@@ -1152,7 +1263,7 @@ nota.addEventListener(
 
 
 /* =========================================
-   CONTADOR
+   ACTUALIZAR CONTADOR
    ========================================= */
 
 function actualizarContador() {
@@ -1293,15 +1404,6 @@ function recuperarBorradorLocal(
     }
 
 
-    if (
-        borrador.fechaDia &&
-        borrador.fechaDia !== obtenerFechaDia()
-    ) {
-
-        return;
-    }
-
-
     const fechaBorrador =
         new Date(
             borrador.fechaBorrador
@@ -1421,6 +1523,13 @@ function recuperarBorradorLocal(
 
 
     nota.focus();
+
+
+    nota.selectionStart =
+        nota.value.length;
+
+    nota.selectionEnd =
+        nota.value.length;
 }
 
 
@@ -1464,7 +1573,7 @@ async function guardarNota(
     esAutomatico
 ) {
 
-    const texto =
+    let texto =
         nota.value.trim();
 
 
@@ -1507,9 +1616,36 @@ async function guardarNota(
     }
 
 
+    /*
+       Si el usuario empezó a escribir
+       pero por algún motivo el encabezado
+       todavía no fue agregado, lo agregamos
+       antes de guardar.
+    */
+
+    if (
+        !tieneEncabezadoDeHoy(
+            nota.value
+        )
+    ) {
+
+        asegurarEncabezadoDelDia();
+
+        texto =
+            nota.value.trim();
+    }
+
+
     const fechaDia =
         obtenerFechaDia();
 
+
+    /*
+       Si no tenemos ID, buscamos el
+       apunte continuo de esa materia.
+
+       NO buscamos por fecha.
+    */
 
     if (
         !apunteActualId
@@ -1532,9 +1668,11 @@ async function guardarNota(
                     materiaActual
                 )
 
-                .eq(
-                    "fecha_dia",
-                    fechaDia
+                .order(
+                    "fecha_modificacion",
+                    {
+                        ascending: false
+                    }
                 )
 
                 .limit(1);
@@ -1585,6 +1723,10 @@ async function guardarNota(
         }
     }
 
+
+    /*
+       CREAR APUNTE CONTINUO
+    */
 
     if (
         !apunteActualId
@@ -1640,6 +1782,11 @@ async function guardarNota(
             );
 
 
+            /*
+               Volvemos a comprobar si
+               otro guardado creó la fila.
+            */
+
             const {
                 data: recuperado,
                 error: errorRecuperacion
@@ -1657,9 +1804,11 @@ async function guardarNota(
                         materiaActual
                     )
 
-                    .eq(
-                        "fecha_dia",
-                        fechaDia
+                    .order(
+                        "fecha_modificacion",
+                        {
+                            ascending: false
+                        }
                     )
 
                     .limit(1);
@@ -1749,7 +1898,7 @@ async function guardarNota(
 
 
 /* =========================================
-   ACTUALIZAR APUNTE EXISTENTE
+   ACTUALIZAR APUNTE CONTINUO
    ========================================= */
 
 async function actualizarApunteExistente(
@@ -1772,6 +1921,13 @@ async function actualizarApunteExistente(
 
                 materia:
                     materiaActual,
+
+                /*
+                   Mantenemos fecha_dia porque
+                   la columna ya existe en tu tabla.
+                   Ahora representa la última
+                   fecha de modificación.
+                */
 
                 fecha_dia:
                     obtenerFechaDia(),
@@ -1862,22 +2018,80 @@ function obtenerTitulo() {
 
     const primeraLinea =
         texto
-            .split("\n")[0]
-            .trim();
+            .split("\n")
+            .find(
+                function(linea) {
+
+                    return linea.trim() !== "";
+
+                }
+            )
+            ?.trim() || "";
+
+
+    /*
+       Si la primera línea es una fecha,
+       buscamos la primera línea real
+       de contenido.
+    */
+
+    const lineas =
+        texto.split("\n");
+
+
+    let titulo =
+        "";
+
+
+    for (
+        let i = 0;
+        i < lineas.length;
+        i++
+    ) {
+
+        const linea =
+            lineas[i].trim();
+
+
+        if (
+            linea === ""
+        ) {
+
+            continue;
+        }
+
+
+        if (
+            /^\d{2}\/\d{2}\/\d{4}\s*-\s*\d{2}:\d{2}$/.test(
+                linea
+            )
+        ) {
+
+            continue;
+        }
+
+
+        titulo =
+            linea;
+
+
+        break;
+    }
 
 
     if (
-        primeraLinea.length > 80
+        titulo.length > 80
     ) {
 
-        return primeraLinea.substring(
+        return titulo.substring(
             0,
             80
         );
     }
 
 
-    return primeraLinea ||
+    return titulo ||
+        primeraLinea ||
         "Apunte";
 }
 
@@ -1937,838 +2151,6 @@ function mostrarMensaje(
         },
         2500
     );
-}
-
-
-/* =========================================
-   APUNTES ANTERIORES
-   ========================================= */
-
-async function abrirApuntesAnteriores() {
-
-    mostrarMensaje(
-        "Buscando apuntes..."
-    );
-
-
-    const {
-        data,
-        error
-    } =
-        await supabaseClient
-
-            .from("apuntes")
-
-            .select(
-                "id, materia, fecha_dia, fecha_creacion, fecha_modificacion, titulo, contenido"
-            )
-
-            .order(
-                "fecha_creacion",
-                {
-                    ascending: false
-                }
-            );
-
-
-    if (
-        error
-    ) {
-
-        console.error(
-            "Error al buscar apuntes:",
-            error
-        );
-
-
-        mostrarMensaje(
-            "Error al buscar apuntes."
-        );
-
-
-        return;
-    }
-
-
-    mostrarListaApuntes(
-        data || []
-    );
-}
-
-
-/* =========================================
-   MODAL DE APUNTES ANTERIORES
-   ========================================= */
-
-function mostrarListaApuntes(
-    apuntes
-) {
-
-    const modalExistente =
-        document.getElementById(
-            "modalApuntes"
-        );
-
-
-    if (
-        modalExistente
-    ) {
-
-        modalExistente.remove();
-    }
-
-
-    const modal =
-        document.createElement(
-            "div"
-        );
-
-
-    modal.id =
-        "modalApuntes";
-
-
-    modal.className =
-        "modal";
-
-
-    const contenido =
-        document.createElement(
-            "div"
-        );
-
-
-    contenido.className =
-        "modal-contenido";
-
-
-    const encabezado =
-        document.createElement(
-            "div"
-        );
-
-
-    encabezado.className =
-        "modal-header";
-
-
-    const titulo =
-        document.createElement(
-            "h2"
-        );
-
-
-    titulo.textContent =
-        "MIS APUNTES";
-
-
-    const cerrar =
-        document.createElement(
-            "button"
-        );
-
-
-    cerrar.className =
-        "btn-cerrar";
-
-
-    cerrar.textContent =
-        "×";
-
-
-    cerrar.title =
-        "Cerrar";
-
-
-    cerrar.addEventListener(
-        "click",
-        function() {
-
-            volverAlContexto();
-
-            modal.remove();
-
-        }
-    );
-
-
-    encabezado.appendChild(
-        titulo
-    );
-
-
-    encabezado.appendChild(
-        cerrar
-    );
-
-
-    contenido.appendChild(
-        encabezado
-    );
-
-
-    if (
-        apuntes.length === 0
-    ) {
-
-        const vacio =
-            document.createElement(
-                "p"
-            );
-
-
-        vacio.textContent =
-            "Todavía no hay apuntes guardados.";
-
-
-        vacio.style.color =
-            "#9ca3af";
-
-
-        vacio.style.textAlign =
-            "center";
-
-
-        vacio.style.padding =
-            "30px 10px";
-
-
-        contenido.appendChild(
-            vacio
-        );
-    }
-
-
-    apuntes.forEach(
-        function(apunte) {
-
-            const item =
-                document.createElement(
-                    "button"
-                );
-
-
-            item.type =
-                "button";
-
-
-            item.style.width =
-                "100%";
-
-
-            item.style.textAlign =
-                "left";
-
-
-            item.style.padding =
-                "13px";
-
-
-            item.style.marginBottom =
-                "8px";
-
-
-            item.style.border =
-                "1px solid #1f2937";
-
-
-            item.style.borderRadius =
-                "10px";
-
-
-            item.style.background =
-                "#030712";
-
-
-            item.style.color =
-                "#e5e7eb";
-
-
-            item.style.cursor =
-                "pointer";
-
-
-            const materia =
-                document.createElement(
-                    "div"
-                );
-
-
-            materia.textContent =
-                apunte.materia;
-
-
-            materia.style.fontWeight =
-                "700";
-
-
-            materia.style.fontSize =
-                "14px";
-
-
-            const fechaApunte =
-                document.createElement(
-                    "div"
-                );
-
-
-            fechaApunte.textContent =
-                formatearFechaApunte(
-                    apunte.fecha_creacion
-                );
-
-
-            fechaApunte.style.color =
-                "#9ca3af";
-
-
-            fechaApunte.style.fontSize =
-                "12px";
-
-
-            fechaApunte.style.marginTop =
-                "4px";
-
-
-            const tituloApunte =
-                document.createElement(
-                    "div"
-                );
-
-
-            tituloApunte.textContent =
-                apunte.titulo ||
-                "Apunte";
-
-
-            tituloApunte.style.color =
-                "#d1d5db";
-
-
-            tituloApunte.style.fontSize =
-                "13px";
-
-
-            tituloApunte.style.marginTop =
-                "3px";
-
-
-            item.appendChild(
-                materia
-            );
-
-
-            item.appendChild(
-                fechaApunte
-            );
-
-
-            item.appendChild(
-                tituloApunte
-            );
-
-
-            item.addEventListener(
-                "click",
-                function() {
-
-                    cargarApunteAnterior(
-                        apunte
-                    );
-
-
-                    modal.remove();
-
-                }
-            );
-
-
-            contenido.appendChild(
-                item
-            );
-
-        }
-    );
-
-
-    const botonCerrar =
-        document.createElement(
-            "button"
-        );
-
-
-    botonCerrar.className =
-        "btn-modal-cerrar";
-
-
-    botonCerrar.textContent =
-        "CERRAR";
-
-
-    botonCerrar.addEventListener(
-        "click",
-        function() {
-
-            volverAlContexto();
-
-            modal.remove();
-
-        }
-    );
-
-
-    contenido.appendChild(
-        botonCerrar
-    );
-
-
-    modal.appendChild(
-        contenido
-    );
-
-
-    document.body.appendChild(
-        modal
-    );
-}
-
-
-/* =========================================
-   FORMATEAR FECHA
-   ========================================= */
-
-function formatearFechaApunte(
-    fechaTexto
-) {
-
-    if (
-        !fechaTexto
-    ) {
-
-        return "";
-    }
-
-
-    const fecha =
-        new Date(
-            fechaTexto
-        );
-
-
-    if (
-        Number.isNaN(
-            fecha.getTime()
-        )
-    ) {
-
-        return "";
-    }
-
-
-    return fecha.toLocaleDateString(
-
-        "es-AR",
-
-        {
-
-            weekday: "short",
-
-            day: "2-digit",
-
-            month: "2-digit",
-
-            year: "numeric"
-
-        }
-
-    );
-}
-
-
-/* =========================================
-   CARGAR APUNTE ANTERIOR
-   ========================================= */
-
-function cargarApunteAnterior(
-    apunte
-) {
-
-    cargandoApunte = true;
-
-
-    apunteActualId =
-        apunte.id;
-
-
-    materiaActual =
-        apunte.materia;
-
-
-    fechaCreacionActual =
-        apunte.fecha_creacion
-            ? new Date(
-                apunte.fecha_creacion
-            )
-            : new Date();
-
-
-    nota.value =
-        apunte.contenido || "";
-
-
-    actualizarContador();
-
-
-    materiaSeleccionada.textContent =
-        materiaActual;
-
-
-    materiaSeleccionada.style.color =
-        "#e5e7eb";
-
-
-    estado.textContent =
-        "Apunte anterior · " +
-        materiaActual;
-
-
-    try {
-
-        localStorage.setItem(
-
-            STORAGE_ULTIMA_MATERIA,
-
-            materiaActual
-
-        );
-
-    } catch (error) {
-
-        console.error(
-            "No se pudo guardar la última materia:",
-            error
-        );
-    }
-
-
-    cargandoApunte = false;
-
-
-    mostrarMensaje(
-        "✓ Apunte cargado"
-    );
-
-
-    nota.focus();
-
-
-    crearBotonVolverActual();
-}
-
-
-/* =========================================
-   BOTÓN VOLVER AL APUNTE ACTUAL
-   ========================================= */
-
-function crearBotonVolverActual() {
-
-    eliminarBotonVolverActual();
-
-
-    const boton =
-        document.createElement(
-            "button"
-        );
-
-
-    boton.id =
-        "btnVolverActual";
-
-
-    boton.textContent =
-        "↩ VOLVER AL APUNTE ACTUAL";
-
-
-    boton.style.position =
-        "fixed";
-
-
-    boton.style.bottom =
-        "85px";
-
-
-    boton.style.left =
-        "50%";
-
-
-    boton.style.transform =
-        "translateX(-50%)";
-
-
-    boton.style.zIndex =
-        "200";
-
-
-    boton.style.height =
-        "42px";
-
-
-    boton.style.padding =
-        "0 16px";
-
-
-    boton.style.border =
-        "1px solid #374151";
-
-
-    boton.style.borderRadius =
-        "10px";
-
-
-    boton.style.background =
-        "#111827";
-
-
-    boton.style.color =
-        "#e5e7eb";
-
-
-    boton.style.fontSize =
-        "12px";
-
-
-    boton.style.fontWeight =
-        "700";
-
-
-    boton.style.cursor =
-        "pointer";
-
-
-    boton.addEventListener(
-        "click",
-        function() {
-
-            volverAlContexto();
-
-        }
-    );
-
-
-    document.body.appendChild(
-        boton
-    );
-}
-
-
-/* =========================================
-   ELIMINAR BOTÓN VOLVER
-   ========================================= */
-
-function eliminarBotonVolverActual() {
-
-    const boton =
-        document.getElementById(
-            "btnVolverActual"
-        );
-
-
-    if (
-        boton
-    ) {
-
-        boton.remove();
-    }
-}
-
-
-/* =========================================
-   VOLVER AL APUNTE ACTUAL
-   ========================================= */
-
-async function volverAlContexto() {
-
-    eliminarBotonVolverActual();
-
-
-    if (
-        !contextoApunteActual
-    ) {
-
-        return;
-    }
-
-
-    const contexto =
-        contextoApunteActual;
-
-
-    if (
-        contexto.id
-    ) {
-
-        const {
-            data,
-            error
-        } =
-            await supabaseClient
-
-                .from("apuntes")
-
-                .select(
-                    "id, materia, fecha_dia, fecha_creacion, contenido"
-                )
-
-                .eq(
-                    "id",
-                    contexto.id
-                )
-
-                .single();
-
-
-        if (
-            !error &&
-            data
-        ) {
-
-            apunteActualId =
-                data.id;
-
-
-            materiaActual =
-                data.materia;
-
-
-            fechaCreacionActual =
-                data.fecha_creacion
-                    ? new Date(
-                        data.fecha_creacion
-                    )
-                    : new Date();
-
-
-            nota.value =
-                data.contenido || "";
-
-
-            actualizarContador();
-
-
-            materiaSeleccionada.textContent =
-                materiaActual;
-
-
-            materiaSeleccionada.style.color =
-                "#e5e7eb";
-
-
-            estado.textContent =
-                "Apunte actual · " +
-                materiaActual;
-
-
-            contextoApunteActual =
-                null;
-
-
-            try {
-
-                localStorage.setItem(
-
-                    STORAGE_ULTIMA_MATERIA,
-
-                    materiaActual
-
-                );
-
-            } catch (error) {
-
-                console.error(
-                    "No se pudo guardar la última materia:",
-                    error
-                );
-            }
-
-
-            mostrarMensaje(
-                "↩ Volviste al apunte actual"
-            );
-
-
-            nota.focus();
-
-
-            return;
-        }
-    }
-
-
-    apunteActualId =
-        contexto.id;
-
-
-    materiaActual =
-        contexto.materia;
-
-
-    fechaCreacionActual =
-        contexto.fechaCreacion
-            ? new Date(
-                contexto.fechaCreacion
-            )
-            : new Date();
-
-
-    nota.value =
-        contexto.contenido || "";
-
-
-    actualizarContador();
-
-
-    materiaSeleccionada.textContent =
-        materiaActual;
-
-
-    materiaSeleccionada.style.color =
-        "#e5e7eb";
-
-
-    estado.textContent =
-        "Apunte actual · " +
-        materiaActual;
-
-
-    contextoApunteActual =
-        null;
-
-
-    try {
-
-        localStorage.setItem(
-
-            STORAGE_ULTIMA_MATERIA,
-
-            materiaActual
-
-        );
-
-    } catch (error) {
-
-        console.error(
-            "No se pudo guardar la última materia:",
-            error
-        );
-    }
-
-
-    mostrarMensaje(
-        "↩ Volviste al apunte actual"
-    );
-
-
-    nota.focus();
 }
 
 
@@ -3049,11 +2431,6 @@ async function agregarMateria() {
             error
         ) {
 
-            /*
-               Código 23505 =
-               materia duplicada.
-            */
-
             if (
                 error.code === "23505"
             ) {
@@ -3108,12 +2485,6 @@ async function agregarMateria() {
     nuevaMateria.value =
         "";
 
-
-    /*
-       Recargamos desde Supabase
-       para que ambos dispositivos
-       tengan exactamente la misma lista.
-    */
 
     await cargarMaterias();
 
@@ -3289,7 +2660,7 @@ async function editarMateria(
         ) {
 
             console.error(
-                "No se pudieron actualizar los apuntes antiguos:",
+                "No se pudieron actualizar los apuntes:",
                 error
             );
         }
@@ -3501,9 +2872,6 @@ async function eliminarMateria(
 
         estado.textContent =
             "Nueva captura";
-
-
-        eliminarBotonVolverActual();
 
 
         eliminarBorradorLocal();
