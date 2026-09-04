@@ -525,6 +525,21 @@ async function cargarMaterias() {
     }
 }
 
+function guardarMaterias(
+    materias
+) {
+
+    localStorage.setItem(
+
+        STORAGE_MATERIAS,
+
+        JSON.stringify(
+            materias
+        )
+
+    );
+}
+
 function obtenerMaterias() {
 
     try {
