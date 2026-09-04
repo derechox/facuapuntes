@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📚 Mis Apuntes</title>
-    <link
-       <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+
+    <title>Mis Apuntes</title>
+
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+
     <link rel="stylesheet" href="style.css">
+
 </head>
+
 
 <body>
 
@@ -30,6 +37,7 @@
 
             </div>
 
+
             <!-- FECHA Y MATERIA -->
             <div class="segunda-linea">
 
@@ -46,6 +54,7 @@
                 </div>
 
             </div>
+
 
             <!-- MENÚ DE MATERIAS -->
             <div
@@ -64,6 +73,7 @@
                 placeholder="Escribí acá tus apuntes..."
                 spellcheck="true"
             ></textarea>
+
 
             <div class="informacion">
 
@@ -91,6 +101,7 @@
                 COMPARTIR
             </button>
 
+
             <button
                 id="btnTexto"
                 class="btn btn-herramienta"
@@ -99,6 +110,7 @@
                 CÓDIGOS
             </button>
 
+
             <button
                 id="btnIA"
                 class="btn btn-herramienta"
@@ -106,6 +118,7 @@
             >
                 IA
             </button>
+
 
             <button
                 id="btnGuardar"
@@ -137,6 +150,7 @@
 
                     <h2>CONFIGURACIÓN</h2>
 
+
                     <button
                         id="btnCerrarConfiguracion"
                         class="btn-cerrar"
@@ -147,12 +161,15 @@
 
                 </div>
 
+
                 <h3>Materias</h3>
+
 
                 <div
                     id="listaMaterias"
                     class="lista-materias"
                 ></div>
+
 
                 <div class="agregar-materia">
 
@@ -162,6 +179,7 @@
                         placeholder="Nueva materia"
                     >
 
+
                     <button
                         id="btnAgregarMateria"
                         type="button"
@@ -170,6 +188,7 @@
                     </button>
 
                 </div>
+
 
                 <button
                     id="btnCerrarModal"
@@ -189,19 +208,23 @@
     <!-- =========================================
          SUPABASE
          ========================================= -->
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 
     <!-- =========================================
-         CONFIGURACIÓN DE FACU-APUNTES
+         CONFIGURACIÓN DE MIS APUNTES
          ========================================= -->
+
     <script>
 
         const SUPABASE_URL =
             "https://rodaerqzebwzcawbpvps.supabase.co";
 
+
         const SUPABASE_PUBLISHABLE_KEY =
-            "sb_publishable_OOZoL1bV0Ble2DgvWxbglg_I5bD1ykO";
+            "sb_publishable_OOZo2L1bV0Ble2DgvWxbglg_I5bD1ykO";
+
 
         const supabaseClient =
             window.supabase.createClient(
@@ -215,7 +238,9 @@
     <!-- =========================================
          PROGRAMA PRINCIPAL
          ========================================= -->
+
     <script src="script.js"></script>
 
 </body>
+
 </html>
