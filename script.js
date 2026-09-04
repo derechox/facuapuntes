@@ -7,6 +7,7 @@
    - AUTOGUARDADO
    - COPIA LOCAL DE SEGURIDAD
    - RECUPERAR ÚLTIMA MATERIA
+   - MATERIAS SINCRONIZADAS CON SUPABASE
    ========================================= */
 
 
@@ -120,7 +121,7 @@ iniciar();
 
 async function iniciar() {
 
-    cargarMaterias();
+    await cargarMaterias();
 
     actualizarFecha();
 
@@ -223,14 +224,6 @@ function actualizarFecha() {
 
 /* =========================================
    FECHA DEL DÍA PARA SUPABASE
-   =========================================
-
-   Devuelve:
-
-   YYYY-MM-DD
-
-   utilizando la fecha local
-   de Argentina / navegador.
    ========================================= */
 
 function obtenerFechaDia() {
@@ -329,14 +322,24 @@ function obtenerFinDelDia() {
    MATERIAS
    ========================================= */
 
-function cargarMaterias() {
+/*
+   IMPORTANTE:
 
-    let materias;
+   localStorage sigue funcionando como
+   copia local.
+
+   Supabase es el lugar donde se sincronizan
+   las materias entre dispositivos.
+*/
+
+async function cargarMaterias() {
+
+    let materiasLocales;
 
 
     try {
 
-        materias =
+        materiasLocales =
             JSON.parse(
                 localStorage.getItem(
                     STORAGE_MATERIAS
@@ -345,52 +348,182 @@ function cargarMaterias() {
 
     } catch (error) {
 
-        materias = null;
+        materiasLocales = null;
     }
 
 
     if (
-        !Array.isArray(materias) ||
-        materias.length === 0
+        !Array.isArray(materiasLocales) ||
+        materiasLocales.length === 0
     ) {
 
-        materias = [
+        materiasLocales = [
             ...MATERIAS_POR_DEFECTO
         ];
-
-
-        guardarMaterias(
-            materias
-        );
     }
 
 
     mostrarMateriasMenu(
-        materias
+        materiasLocales
     );
 
 
     mostrarMateriasConfiguracion(
-        materias
+        materiasLocales
     );
+
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient
+
+                .from("materias")
+
+                .select(
+                    "nombre"
+                )
+
+                .order(
+                    "nombre",
+                    {
+                        ascending: true
+                    }
+                );
+
+
+        if (
+            error
+        ) {
+
+            throw error;
+        }
+
+
+        let materiasSupabase =
+            (data || [])
+                .map(
+                    function(materia) {
+
+                        return String(
+                            materia.nombre
+                        )
+                            .trim()
+                            .toUpperCase();
+
+                    }
+                )
+                .filter(
+                    function(nombre) {
+
+                        return nombre !== "";
+
+                    }
+                );
+
+
+        if (
+            materiasSupabase.length === 0
+        ) {
+
+            const materiasIniciales =
+                [
+                    ...new Set(
+                        [
+                            ...MATERIAS_POR_DEFECTO,
+                            ...materiasLocales
+                        ]
+                    )
+                ];
+
+
+            const filas =
+                materiasIniciales.map(
+                    function(nombre) {
+
+                        return {
+                            nombre: nombre
+                        };
+
+                    }
+                );
+
+
+            const {
+                error: errorInsert
+            } =
+                await supabaseClient
+
+                    .from("materias")
+
+                    .upsert(
+                        filas,
+                        {
+                            onConflict: "nombre"
+                        }
+                    );
+
+
+            if (
+                errorInsert
+            ) {
+
+                throw errorInsert;
+            }
+
+
+            materiasSupabase =
+                materiasIniciales;
+        }
+
+
+        guardarMaterias(
+            materiasSupabase
+        );
+
+
+        mostrarMateriasMenu(
+            materiasSupabase
+        );
+
+
+        mostrarMateriasConfiguracion(
+            materiasSupabase
+        );
+
+
+        console.log(
+            "Materias sincronizadas:",
+            materiasSupabase
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "No se pudieron sincronizar las materias:",
+            error
+        );
+
+
+        guardarMaterias(
+            materiasLocales
+        );
+
+
+        mostrarMateriasMenu(
+            materiasLocales
+        );
+
+
+        mostrarMateriasConfiguracion(
+            materiasLocales
+        );
+    }
 }
-
-
-function guardarMaterias(
-    materias
-) {
-
-    localStorage.setItem(
-
-        STORAGE_MATERIAS,
-
-        JSON.stringify(
-            materias
-        )
-
-    );
-}
-
 
 function obtenerMaterias() {
 
@@ -693,15 +826,6 @@ async function cargarApunteDeHoy(
         obtenerFechaDia();
 
 
-    /*
-       Ahora buscamos directamente por:
-
-       materia + fecha_dia
-
-       Esto evita depender de
-       fecha_creacion + hora.
-    */
-
     const {
         data,
         error
@@ -752,10 +876,6 @@ async function cargarApunteDeHoy(
     }
 
 
-    /*
-       EXISTE APUNTE DE HOY
-    */
-
     if (
         data &&
         data.length > 0
@@ -780,10 +900,6 @@ async function cargarApunteDeHoy(
         return;
     }
 
-
-    /*
-       NO EXISTE APUNTE DE HOY.
-    */
 
     iniciarNuevoApunteSinGuardar();
 
@@ -1162,11 +1278,6 @@ function recuperarBorradorLocal(
     }
 
 
-    /*
-       El borrador también debe ser
-       del día actual.
-    */
-
     if (
         borrador.fechaDia &&
         borrador.fechaDia !== obtenerFechaDia()
@@ -1191,12 +1302,6 @@ function recuperarBorradorLocal(
         return;
     }
 
-
-    /*
-       Si existe un apunte en Supabase,
-       solamente recuperamos el borrador
-       si es más nuevo.
-    */
 
     if (
         apunteSupabase &&
@@ -1223,11 +1328,6 @@ function recuperarBorradorLocal(
         }
     }
 
-
-    /*
-       Si corresponde a otro apunte,
-       no lo mezclamos.
-    */
 
     if (
         apunteSupabase &&
@@ -1396,11 +1496,6 @@ async function guardarNota(
         obtenerFechaDia();
 
 
-    /* =====================================
-       SI NO TENEMOS ID:
-       BUSCAMOS NUEVAMENTE ANTES DE INSERTAR
-       ===================================== */
-
     if (
         !apunteActualId
     ) {
@@ -1457,13 +1552,6 @@ async function guardarNota(
         }
 
 
-        /*
-           YA EXISTE.
-
-           Lo cargamos como apunte actual
-           y actualizamos ese registro.
-        */
-
         if (
             existente &&
             existente.length > 0
@@ -1482,10 +1570,6 @@ async function guardarNota(
         }
     }
 
-
-    /* =====================================
-       CREAR NUEVO APUNTE
-       ===================================== */
 
     if (
         !apunteActualId
@@ -1534,13 +1618,6 @@ async function guardarNota(
         if (
             error
         ) {
-
-            /*
-               Si Supabase rechazó el INSERT
-               porque otro proceso creó el apunte
-               exactamente al mismo tiempo,
-               buscamos el registro existente.
-            */
 
             console.error(
                 "Error al crear apunte:",
@@ -1591,11 +1668,6 @@ async function guardarNota(
                         : new Date();
 
 
-                /*
-                   Ahora actualizamos
-                   el único apunte existente.
-                */
-
                 return await actualizarApunteExistente(
                     texto,
                     esAutomatico
@@ -1619,10 +1691,6 @@ async function guardarNota(
             return false;
         }
 
-
-        /*
-           Supabase confirmó el INSERT.
-        */
 
         apunteActualId =
             data.id;
@@ -1657,10 +1725,6 @@ async function guardarNota(
         return true;
     }
 
-
-    /* =====================================
-       ACTUALIZAR APUNTE EXISTENTE
-       ===================================== */
 
     return await actualizarApunteExistente(
         texto,
@@ -1819,10 +1883,6 @@ function iniciarGuardadoAutomatico() {
     }
 
 
-    /*
-       Cada 5 minutos.
-    */
-
     guardadoAutomatico =
         setInterval(
             function() {
@@ -1967,10 +2027,6 @@ function mostrarListaApuntes(
         "modal-contenido";
 
 
-    /* -----------------------------------------
-       ENCABEZADO
-       ----------------------------------------- */
-
     const encabezado =
         document.createElement(
             "div"
@@ -2036,10 +2092,6 @@ function mostrarListaApuntes(
     );
 
 
-    /* -----------------------------------------
-       SIN APUNTES
-       ----------------------------------------- */
-
     if (
         apuntes.length === 0
     ) {
@@ -2071,10 +2123,6 @@ function mostrarListaApuntes(
         );
     }
 
-
-    /* -----------------------------------------
-       LISTA
-       ----------------------------------------- */
 
     apuntes.forEach(
         function(apunte) {
@@ -2228,10 +2276,6 @@ function mostrarListaApuntes(
     );
 
 
-    /* -----------------------------------------
-       CERRAR
-       ----------------------------------------- */
-
     const botonCerrar =
         document.createElement(
             "button"
@@ -2336,11 +2380,6 @@ function cargarApunteAnterior(
 
     cargandoApunte = true;
 
-
-    /*
-       Guardamos el apunte actual
-       antes de cambiar al anterior.
-    */
 
     apunteActualId =
         apunte.id;
@@ -2549,11 +2588,6 @@ async function volverAlContexto() {
         contextoApunteActual;
 
 
-    /*
-       Si el apunte actual ya tenía ID,
-       recuperamos su versión actual.
-    */
-
     if (
         contexto.id
     ) {
@@ -2654,11 +2688,6 @@ async function volverAlContexto() {
         }
     }
 
-
-    /*
-       Si todavía no existía en Supabase,
-       recuperamos lo que había en pantalla.
-    */
 
     apunteActualId =
         contexto.id;
@@ -2937,7 +2966,7 @@ nuevaMateria.addEventListener(
 );
 
 
-function agregarMateria() {
+async function agregarMateria() {
 
     const nombre =
         nuevaMateria.value
@@ -2980,6 +3009,77 @@ function agregarMateria() {
     }
 
 
+    /*
+       PRIMERO GUARDAMOS EN SUPABASE.
+    */
+
+    try {
+
+        const {
+            error
+        } =
+            await supabaseClient
+
+                .from("materias")
+
+                .insert({
+
+                    nombre:
+                        nombre
+
+                });
+
+
+        if (
+            error
+        ) {
+
+            /*
+               Código 23505 =
+               materia duplicada.
+            */
+
+            if (
+                error.code === "23505"
+            ) {
+
+                alert(
+                    "Esa materia ya existe."
+                );
+
+
+                await cargarMaterias();
+
+                return;
+            }
+
+
+            throw error;
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "Error agregando materia en Supabase:",
+            error
+        );
+
+
+        alert(
+            "No se pudo guardar la materia en Supabase."
+        );
+
+
+        return;
+    }
+
+
+    /*
+       Supabase confirmó.
+       Ahora actualizamos la copia local.
+    */
+
     materias.push(
         nombre
     );
@@ -2994,11 +3094,22 @@ function agregarMateria() {
         "";
 
 
-    cargarMaterias();
+    /*
+       Recargamos desde Supabase
+       para que ambos dispositivos
+       tengan exactamente la misma lista.
+    */
+
+    await cargarMaterias();
 
 
     mostrarMateriasConfiguracion(
-        materias
+        obtenerMaterias()
+    );
+
+
+    mostrarMensaje(
+        "✓ Materia agregada"
     );
 }
 
@@ -3007,7 +3118,7 @@ function agregarMateria() {
    EDITAR MATERIA
    ========================================= */
 
-function editarMateria(
+async function editarMateria(
     indice
 ) {
 
@@ -3080,6 +3191,107 @@ function editarMateria(
     }
 
 
+    /*
+       Actualizamos Supabase.
+    */
+
+    try {
+
+        const {
+            error
+        } =
+            await supabaseClient
+
+                .from("materias")
+
+                .update({
+
+                    nombre:
+                        nombre
+
+                })
+
+                .eq(
+                    "nombre",
+                    actual
+                );
+
+
+        if (
+            error
+        ) {
+
+            throw error;
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "Error editando materia en Supabase:",
+            error
+        );
+
+
+        alert(
+            "No se pudo modificar la materia."
+        );
+
+
+        return;
+    }
+
+
+    /*
+       Actualizamos también los apuntes
+       existentes de esa materia.
+    */
+
+    try {
+
+        const {
+            error
+        } =
+            await supabaseClient
+
+                .from("apuntes")
+
+                .update({
+
+                    materia:
+                        nombre
+
+                })
+
+                .eq(
+                    "materia",
+                    actual
+                );
+
+
+        if (
+            error
+        ) {
+
+            console.error(
+                "No se pudieron actualizar los apuntes antiguos:",
+                error
+            );
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Error actualizando apuntes:",
+            error
+        );
+    }
+
+
+    /*
+       Actualizamos copia local.
+    */
+
     materias[indice] =
         nombre;
 
@@ -3126,11 +3338,11 @@ function editarMateria(
     }
 
 
-    cargarMaterias();
+    await cargarMaterias();
 
 
     mostrarMateriasConfiguracion(
-        materias
+        obtenerMaterias()
     );
 }
 
@@ -3139,7 +3351,7 @@ function editarMateria(
    ELIMINAR MATERIA
    ========================================= */
 
-function eliminarMateria(
+async function eliminarMateria(
     indice
 ) {
 
@@ -3179,6 +3391,56 @@ function eliminarMateria(
         return;
     }
 
+
+    /*
+       Eliminamos de Supabase.
+    */
+
+    try {
+
+        const {
+            error
+        } =
+            await supabaseClient
+
+                .from("materias")
+
+                .delete()
+
+                .eq(
+                    "nombre",
+                    materia
+                );
+
+
+        if (
+            error
+        ) {
+
+            throw error;
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "Error eliminando materia en Supabase:",
+            error
+        );
+
+
+        alert(
+            "No se pudo eliminar la materia."
+        );
+
+
+        return;
+    }
+
+
+    /*
+       Actualizamos copia local.
+    */
 
     materias.splice(
         indice,
@@ -3248,11 +3510,11 @@ function eliminarMateria(
     }
 
 
-    cargarMaterias();
+    await cargarMaterias();
 
 
     mostrarMateriasConfiguracion(
-        materias
+        obtenerMaterias()
     );
 }
 
@@ -3264,14 +3526,6 @@ function eliminarMateria(
 window.addEventListener(
     "beforeunload",
     function() {
-
-        /*
-           No hacemos peticiones a Supabase
-           al cerrar la página.
-
-           El borrador local queda como
-           copia de seguridad.
-        */
 
         if (
             nota.value.trim() !== "" &&
