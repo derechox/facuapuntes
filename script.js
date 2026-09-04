@@ -96,6 +96,26 @@ const btnIA =
 
 
 /* =========================================
+   MENÚ COMPARTIR
+   ========================================= */
+
+const menuCompartir =
+    document.getElementById("menuCompartir");
+
+const btnWhatsApp =
+    document.getElementById("btnWhatsApp");
+
+const btnPDF =
+    document.getElementById("btnPDF");
+
+const btnWord =
+    document.getElementById("btnWord");
+
+const btnImprimir =
+    document.getElementById("btnImprimir");
+
+
+/* =========================================
    ESTADO ACTUAL
    ========================================= */
 
@@ -430,12 +450,6 @@ function asegurarEncabezadoDelDia() {
         obtenerEncabezadoDelDia();
 
 
-    /*
-       Si no hay contenido,
-       comenzamos directamente
-       con fecha y hora.
-    */
-
     if (
         contenido.trim() === ""
     ) {
@@ -445,12 +459,6 @@ function asegurarEncabezadoDelDia() {
             "\n\n";
 
     } else {
-
-        /*
-           Si ya hay contenido de días
-           anteriores, agregamos el
-           nuevo día al final.
-        */
 
         const separador =
             contenido.endsWith("\n")
@@ -465,10 +473,6 @@ function asegurarEncabezadoDelDia() {
             "\n\n";
     }
 
-
-    /*
-       Dejamos el cursor al final.
-    */
 
     nota.selectionStart =
         nota.value.length;
@@ -767,10 +771,6 @@ function mostrarMateriasMenu(
     );
 
 
-    /*
-       CONFIGURACIÓN
-    */
-
     const separadorConfiguracion =
         document.createElement(
             "div"
@@ -840,11 +840,6 @@ async function seleccionarMateria(
     }
 
 
-    /*
-       Guardamos antes de cambiar
-       de materia.
-    */
-
     if (
         materiaActual !== "" &&
         nota.value.trim() !== ""
@@ -895,16 +890,6 @@ async function cargarApunteContinuo(
         "Buscando apunte · " +
         materia;
 
-
-    /*
-       IMPORTANTE:
-
-       Ya NO buscamos por fecha.
-
-       Buscamos el último apunte de
-       esa materia para mantenerlo
-       como archivo continuo.
-    */
 
     const {
         data,
@@ -1117,11 +1102,6 @@ function cargarApunteEnPantalla(
     cargandoApunte = false;
 
 
-    /*
-       Cursor al final del archivo
-       continuo.
-    */
-
     nota.focus();
 
 
@@ -1192,13 +1172,6 @@ nota.addEventListener(
 nota.addEventListener(
     "beforeinput",
     function(event) {
-
-        /*
-           Solo nos interesa cuando el
-           usuario está agregando contenido.
-
-           No agregamos fechas al borrar.
-        */
 
         const tiposDeEntrada =
             [
@@ -1616,13 +1589,6 @@ async function guardarNota(
     }
 
 
-    /*
-       Si el usuario empezó a escribir
-       pero por algún motivo el encabezado
-       todavía no fue agregado, lo agregamos
-       antes de guardar.
-    */
-
     if (
         !tieneEncabezadoDeHoy(
             nota.value
@@ -1639,13 +1605,6 @@ async function guardarNota(
     const fechaDia =
         obtenerFechaDia();
 
-
-    /*
-       Si no tenemos ID, buscamos el
-       apunte continuo de esa materia.
-
-       NO buscamos por fecha.
-    */
 
     if (
         !apunteActualId
@@ -1724,10 +1683,6 @@ async function guardarNota(
     }
 
 
-    /*
-       CREAR APUNTE CONTINUO
-    */
-
     if (
         !apunteActualId
     ) {
@@ -1781,11 +1736,6 @@ async function guardarNota(
                 error
             );
 
-
-            /*
-               Volvemos a comprobar si
-               otro guardado creó la fila.
-            */
 
             const {
                 data: recuperado,
@@ -1922,13 +1872,6 @@ async function actualizarApunteExistente(
                 materia:
                     materiaActual,
 
-                /*
-                   Mantenemos fecha_dia porque
-                   la columna ya existe en tu tabla.
-                   Ahora representa la última
-                   fecha de modificación.
-                */
-
                 fecha_dia:
                     obtenerFechaDia(),
 
@@ -2028,12 +1971,6 @@ function obtenerTitulo() {
             )
             ?.trim() || "";
 
-
-    /*
-       Si la primera línea es una fecha,
-       buscamos la primera línea real
-       de contenido.
-    */
 
     const lineas =
         texto.split("\n");
@@ -2406,10 +2343,6 @@ async function agregarMateria() {
     }
 
 
-    /*
-       PRIMERO GUARDAMOS EN SUPABASE.
-    */
-
     try {
 
         const {
@@ -2466,11 +2399,6 @@ async function agregarMateria() {
         return;
     }
 
-
-    /*
-       Supabase confirmó.
-       Ahora actualizamos la copia local.
-    */
 
     materias.push(
         nombre
@@ -2577,10 +2505,6 @@ async function editarMateria(
     }
 
 
-    /*
-       Actualizamos Supabase.
-    */
-
     try {
 
         const {
@@ -2628,11 +2552,6 @@ async function editarMateria(
     }
 
 
-    /*
-       Actualizamos también los apuntes
-       existentes de esa materia.
-    */
-
     try {
 
         const {
@@ -2673,10 +2592,6 @@ async function editarMateria(
         );
     }
 
-
-    /*
-       Actualizamos copia local.
-    */
 
     materias[indice] =
         nombre;
@@ -2778,10 +2693,6 @@ async function eliminarMateria(
     }
 
 
-    /*
-       Eliminamos de Supabase.
-    */
-
     try {
 
         const {
@@ -2823,10 +2734,6 @@ async function eliminarMateria(
         return;
     }
 
-
-    /*
-       Actualizamos copia local.
-    */
 
     materias.splice(
         indice,
@@ -2900,6 +2807,460 @@ async function eliminarMateria(
         obtenerMaterias()
     );
 }
+
+
+/* =========================================
+   MENÚ COMPARTIR
+   ========================================= */
+
+btnCompartir.addEventListener(
+    "click",
+    function(event) {
+
+        event.stopPropagation();
+
+        menuCompartir.classList.toggle(
+            "abierto"
+        );
+    }
+);
+
+
+/* =========================================
+   MANDAR POR WHATSAPP
+   ========================================= */
+
+btnWhatsApp.addEventListener(
+    "click",
+    function() {
+
+        const texto =
+            nota.value.trim();
+
+
+        if (
+            texto === ""
+        ) {
+
+            mostrarMensaje(
+                "No hay nada para compartir."
+            );
+
+            return;
+        }
+
+
+        const mensajeWhatsApp =
+            materiaActual
+                ? "📚 " +
+                  materiaActual +
+                  "\n\n" +
+                  texto
+                : texto;
+
+
+        const url =
+            "https://wa.me/?text=" +
+            encodeURIComponent(
+                mensajeWhatsApp
+            );
+
+
+        window.open(
+            url,
+            "_blank"
+        );
+
+
+        menuCompartir.classList.remove(
+            "abierto"
+        );
+    }
+);
+
+
+/* =========================================
+   EXPORTAR PDF
+   ========================================= */
+
+btnPDF.addEventListener(
+    "click",
+    function() {
+
+        const texto =
+            nota.value.trim();
+
+
+        if (
+            texto === ""
+        ) {
+
+            mostrarMensaje(
+                "No hay nada para exportar."
+            );
+
+            return;
+        }
+
+
+        if (
+            !window.jspdf ||
+            !window.jspdf.jsPDF
+        ) {
+
+            mostrarMensaje(
+                "No se pudo cargar el exportador PDF."
+            );
+
+            return;
+        }
+
+
+        const {
+            jsPDF
+        } =
+            window.jspdf;
+
+
+        const pdf =
+            new jsPDF({
+                unit: "mm",
+                format: "a4"
+            });
+
+
+        const margen =
+            18;
+
+
+        const ancho =
+            210 -
+            margen * 2;
+
+
+        const lineas =
+            pdf.splitTextToSize(
+                texto,
+                ancho
+            );
+
+
+        let y =
+            margen;
+
+
+        const alturaLinea =
+            7;
+
+
+        lineas.forEach(
+            function(linea) {
+
+                if (
+                    y >
+                    297 - margen
+                ) {
+
+                    pdf.addPage();
+
+                    y =
+                        margen;
+                }
+
+
+                pdf.text(
+                    linea,
+                    margen,
+                    y
+                );
+
+
+                y +=
+                    alturaLinea;
+            }
+        );
+
+
+        const nombreArchivo =
+            materiaActual
+                ? materiaActual
+                      .toLowerCase()
+                      .replace(
+                          /[^a-z0-9áéíóúüñ]+/gi,
+                          "_"
+                      )
+                : "mis_apuntes";
+
+
+        pdf.save(
+            nombreArchivo +
+            ".pdf"
+        );
+
+
+        menuCompartir.classList.remove(
+            "abierto"
+        );
+
+
+        mostrarMensaje(
+            "✓ PDF exportado"
+        );
+    }
+);
+
+
+/* =========================================
+   EXPORTAR WORD
+   ========================================= */
+
+btnWord.addEventListener(
+    "click",
+    function() {
+
+        const texto =
+            nota.value.trim();
+
+
+        if (
+            texto === ""
+        ) {
+
+            mostrarMensaje(
+                "No hay nada para exportar."
+            );
+
+            return;
+        }
+
+
+        const textoSeguro =
+            texto
+                .replace(
+                    /&/g,
+                    "&amp;"
+                )
+                .replace(
+                    /</g,
+                    "&lt;"
+                )
+                .replace(
+                    />/g,
+                    "&gt;"
+                );
+
+
+        const contenidoHTML =
+            "<!DOCTYPE html>" +
+            "<html>" +
+            "<head>" +
+            "<meta charset='UTF-8'>" +
+            "<title>Mis Apuntes</title>" +
+            "</head>" +
+            "<body>" +
+            "<pre style='font-family: Arial; font-size: 12pt; white-space: pre-wrap;'>" +
+            textoSeguro +
+            "</pre>" +
+            "</body>" +
+            "</html>";
+
+
+        const blob =
+            new Blob(
+                [
+                    "\ufeff",
+                    contenidoHTML
+                ],
+                {
+                    type:
+                        "application/msword"
+                }
+            );
+
+
+        const url =
+            URL.createObjectURL(
+                blob
+            );
+
+
+        const enlace =
+            document.createElement(
+                "a"
+            );
+
+
+        enlace.href =
+            url;
+
+
+        enlace.download =
+            (
+                materiaActual ||
+                "mis_apuntes"
+            ) +
+            ".doc";
+
+
+        document.body.appendChild(
+            enlace
+        );
+
+
+        enlace.click();
+
+
+        document.body.removeChild(
+            enlace
+        );
+
+
+        URL.revokeObjectURL(
+            url
+        );
+
+
+        menuCompartir.classList.remove(
+            "abierto"
+        );
+
+
+        mostrarMensaje(
+            "✓ Word exportado"
+        );
+    }
+);
+
+
+/* =========================================
+   IMPRIMIR
+   ========================================= */
+
+btnImprimir.addEventListener(
+    "click",
+    function() {
+
+        const texto =
+            nota.value.trim();
+
+
+        if (
+            texto === ""
+        ) {
+
+            mostrarMensaje(
+                "No hay nada para imprimir."
+            );
+
+            return;
+        }
+
+
+        const ventana =
+            window.open(
+                "",
+                "_blank"
+            );
+
+
+        if (
+            !ventana
+        ) {
+
+            mostrarMensaje(
+                "El navegador bloqueó la ventana de impresión."
+            );
+
+            return;
+        }
+
+
+        const textoHTML =
+            texto
+                .replace(
+                    /&/g,
+                    "&amp;"
+                )
+                .replace(
+                    /</g,
+                    "&lt;"
+                )
+                .replace(
+                    />/g,
+                    "&gt;"
+                )
+                .replace(
+                    /\n/g,
+                    "<br>"
+                );
+
+
+        ventana.document.write(
+            "<!DOCTYPE html>" +
+            "<html lang='es'>" +
+            "<head>" +
+            "<meta charset='UTF-8'>" +
+            "<title>Mis Apuntes</title>" +
+            "<style>" +
+            "body {" +
+            "font-family: Arial, sans-serif;" +
+            "font-size: 12pt;" +
+            "line-height: 1.6;" +
+            "margin: 25mm;" +
+            "color: #000;" +
+            "}" +
+            "</style>" +
+            "</head>" +
+            "<body>" +
+            textoHTML +
+            "</body>" +
+            "</html>"
+        );
+
+
+        ventana.document.close();
+
+
+        ventana.focus();
+
+
+        setTimeout(
+            function() {
+
+                ventana.print();
+
+            },
+            300
+        );
+
+
+        menuCompartir.classList.remove(
+            "abierto"
+        );
+    }
+);
+
+
+/* =========================================
+   CERRAR MENÚ COMPARTIR AL HACER CLIC AFUERA
+   ========================================= */
+
+document.addEventListener(
+    "click",
+    function(event) {
+
+        if (
+            !event.target.closest(
+                ".compartir-contenedor"
+            )
+        ) {
+
+            menuCompartir.classList.remove(
+                "abierto"
+            );
+        }
+    }
+);
 
 
 /* =========================================

@@ -1,5 +1,5 @@
 /* =========================================
-   FACU-APUNTES
+   MIS APUNTES
    ESTILOS PRINCIPALES
    ========================================= */
 
@@ -25,11 +25,6 @@ body {
     justify-content: center;
 }
 
-
-/* =========================================
-   APLICACIÓN
-   ========================================= */
-
 .app {
     width: 100%;
     max-width: 720px;
@@ -41,11 +36,6 @@ body {
 
     padding: 18px;
 }
-
-
-/* =========================================
-   ENCABEZADO
-   ========================================= */
 
 .header {
     position: relative;
@@ -67,11 +57,6 @@ body {
     letter-spacing: 0.6px;
     white-space: nowrap;
 }
-
-
-/* =========================================
-   FECHA + MATERIA
-   ========================================= */
 
 .segunda-linea {
     display: flex;
@@ -102,11 +87,6 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
 }
-
-
-/* =========================================
-   BOTÓN MATERIA
-   ========================================= */
 
 .btn-materia {
     min-width: 0;
@@ -140,7 +120,7 @@ body {
 
 
 /* =========================================
-   MENÚ DE MATERIAS
+   MENÚ MATERIA
    ========================================= */
 
 .menu-materia {
@@ -201,18 +181,13 @@ body {
     color: #9ca3af !important;
 }
 
-
-/* =========================================
-   OCULTAR
-   ========================================= */
-
 .oculto {
     display: none !important;
 }
 
 
 /* =========================================
-   ÁREA DE ESCRITURA
+   CONTENIDO
    ========================================= */
 
 .contenido {
@@ -224,11 +199,6 @@ body {
 
     width: 100%;
 }
-
-
-/* =========================================
-   TEXTAREA
-   ========================================= */
 
 textarea {
     width: 100%;
@@ -267,40 +237,9 @@ textarea::placeholder {
     color: #6b7280;
 }
 
-
-/* =========================================
-   TEXTAREA EXPANDIDO
-   =========================================
-
-   DOBLE CLIC:
-
-   - Mantiene exactamente el mismo alto.
-   - Ocupa todo el ancho de la pantalla.
-   - Se expande tanto hacia la izquierda
-     como hacia la derecha.
-   ========================================= */
-
 textarea.textarea-expandido {
     width: 100vw;
-
-    /*
-       El textarea normalmente mide
-       el ancho disponible dentro de .app.
-
-       Este cálculo desplaza el elemento
-       hacia la izquierda exactamente
-       lo necesario para centrarlo
-       respecto de la ventana.
-    */
-
     margin-left: calc((100% - 100vw) / 2);
-
-    /*
-       El margen derecho compensa también
-       la expansión para que no quede
-       desplazado hacia un solo lado.
-    */
-
     margin-right: calc((100% - 100vw) / 2);
 }
 
@@ -325,7 +264,7 @@ textarea.textarea-expandido {
 
 
 /* =========================================
-   BOTONES PRINCIPALES
+   BOTONES
    ========================================= */
 
 .botones {
@@ -368,53 +307,99 @@ textarea.textarea-expandido {
     transform: scale(0.97);
 }
 
-
-/* =========================================
-   BOTONES HERRAMIENTA
-   ========================================= */
-
 .btn-herramienta {
     background: #374151;
     color: #ffffff;
 }
-
-
-/* =========================================
-   CÓDIGOS
-   ========================================= */
 
 #btnTexto {
     background: #374151;
     color: #ffffff;
 }
 
-
-/* =========================================
-   IA
-   ========================================= */
-
 #btnIA {
     background: #374151;
     color: #ffffff;
 }
-
-
-/* =========================================
-   GUARDAR
-   ========================================= */
 
 .btn-guardar {
     background: #1e40af;
     color: #ffffff;
 }
 
-
-/* =========================================
-   HOVER BOTONES
-   ========================================= */
-
 .btn:hover {
     opacity: 0.9;
+}
+
+
+/* =========================================
+   MENÚ COMPARTIR
+   ========================================= */
+
+.compartir-contenedor {
+    position: relative;
+
+    flex: 1;
+    min-width: 0;
+}
+
+.compartir-contenedor .btn {
+    width: 100%;
+}
+
+.menu-compartir {
+    position: absolute;
+
+    bottom: calc(100% + 8px);
+    left: 0;
+
+    width: 100%;
+    min-width: 220px;
+
+    background: #111827;
+
+    border: 1px solid #374151;
+    border-radius: 12px;
+
+    padding: 7px;
+
+    box-shadow:
+        0 15px 35px rgba(0, 0, 0, 0.45);
+
+    z-index: 100;
+
+    display: none;
+}
+
+.menu-compartir.abierto {
+    display: block;
+}
+
+.menu-compartir button {
+    width: 100%;
+    height: 42px;
+
+    border: none;
+    border-radius: 8px;
+
+    background: transparent;
+
+    color: #e5e7eb;
+
+    text-align: left;
+
+    padding: 0 12px;
+
+    font-family: Inter, Arial, sans-serif;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.menu-compartir button:hover {
+    background: #1f2937;
 }
 
 
@@ -438,7 +423,7 @@ textarea.textarea-expandido {
 
 
 /* =========================================
-   MODAL CONFIGURACIÓN
+   MODAL
    ========================================= */
 
 .modal {
@@ -627,7 +612,7 @@ textarea.textarea-expandido {
 
 
 /* =========================================
-   CERRAR CONFIGURACIÓN
+   BOTÓN CERRAR MODAL
    ========================================= */
 
 .btn-modal-cerrar {
@@ -663,32 +648,26 @@ textarea.textarea-expandido {
         padding: 12px;
     }
 
-
     .header h1 {
         font-size: 21px;
     }
-
 
     .btn-materia {
         font-size: 12px;
     }
 
-
     .segunda-linea {
         margin-top: 5px;
     }
-
 
     .fecha {
         font-size: 12px;
     }
 
-
     .materia-seleccionada {
         font-size: 11px;
         max-width: 150px;
     }
-
 
     textarea {
         padding: 17px;
@@ -696,35 +675,23 @@ textarea.textarea-expandido {
         border-radius: 15px;
     }
 
-
-    /* -----------------------------------------
-       EXPANSIÓN HORIZONTAL EN CELULAR
-       ----------------------------------------- */
-
     textarea.textarea-expandido {
         width: 100vw;
-
-        /*
-           La app tiene 12px de padding
-           a cada lado.
-
-           Salimos exactamente de ese padding.
-        */
-
         margin-left: -12px;
-
         margin-right: -12px;
     }
-
 
     .btn {
         height: 54px;
         font-size: 13px;
     }
 
-
     .menu-materia {
         width: 200px;
+    }
+
+    .menu-compartir {
+        min-width: 220px;
     }
 }
 

@@ -1,97 +1,129 @@
 <!DOCTYPE html>
+
 <html lang="es">
 
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Mis Apuntes</title>
+```
+<title>Mis Apuntes</title>
 
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+<link
+    rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>"
+>
 
-    <link rel="stylesheet" href="style.css">
+<link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+>
+
+<link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+>
+
+<link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+>
+
+<link
+    rel="stylesheet"
+    href="style.css"
+>
+```
 
 </head>
 
-
 <body>
 
-    <div class="app">
+```
+<div class="app">
 
-        <!-- ENCABEZADO -->
-        <header class="header">
+    <!-- ENCABEZADO -->
 
-            <div class="header-top">
+    <header class="header">
 
-                <h1>📚 MIS APUNTES</h1>
+        <div class="header-top">
 
-                <button
-                    id="btnMateria"
-                    class="btn-materia"
-                    type="button"
-                >
-                    MATERIA ▼
-                </button>
+            <h1>📚 MIS APUNTES</h1>
 
-            </div>
+            <button
+                id="btnMateria"
+                class="btn-materia"
+                type="button"
+            >
+                MATERIA ▼
+            </button>
 
-
-            <!-- FECHA Y MATERIA -->
-            <div class="segunda-linea">
-
-                <div
-                    id="fecha"
-                    class="fecha"
-                ></div>
-
-                <div
-                    id="materiaSeleccionada"
-                    class="materia-seleccionada"
-                >
-                    Seleccionar
-                </div>
-
-            </div>
+        </div>
 
 
-            <!-- MENÚ DE MATERIAS -->
+        <!-- FECHA Y MATERIA -->
+
+        <div class="segunda-linea">
+
             <div
-                id="menuMateria"
-                class="menu-materia oculto"
+                id="fecha"
+                class="fecha"
             ></div>
 
-        </header>
-
-
-        <!-- ÁREA DE ESCRITURA -->
-        <main class="contenido">
-
-            <textarea
-                id="nota"
-                placeholder="Escribí acá tus apuntes..."
-                spellcheck="true"
-            ></textarea>
-
-
-            <div class="informacion">
-
-                <span id="contador">
-                    0 caracteres
-                </span>
-
-                <span id="estado">
-                    Nueva captura
-                </span>
-
+            <div
+                id="materiaSeleccionada"
+                class="materia-seleccionada"
+            >
+                Seleccionar
             </div>
 
-        </main>
+        </div>
 
 
-        <!-- BOTONES -->
-        <div class="botones">
+        <!-- MENÚ DE MATERIAS -->
+
+        <div
+            id="menuMateria"
+            class="menu-materia oculto"
+        ></div>
+
+    </header>
+
+
+    <!-- ÁREA DE ESCRITURA -->
+
+    <main class="contenido">
+
+        <textarea
+            id="nota"
+            placeholder="Escribí acá tus apuntes..."
+            spellcheck="true"
+        ></textarea>
+
+
+        <div class="informacion">
+
+            <span id="contador">
+                0 caracteres
+            </span>
+
+            <span id="estado">
+                Nueva captura
+            </span>
+
+        </div>
+
+    </main>
+
+
+    <!-- BOTONES -->
+
+    <div class="botones">
+
+        <!-- COMPARTIR -->
+
+        <div class="compartir-contenedor">
 
             <button
                 id="btnCompartir"
@@ -102,144 +134,202 @@
             </button>
 
 
-            <button
-                id="btnTexto"
-                class="btn btn-herramienta"
-                type="button"
+            <div
+                id="menuCompartir"
+                class="menu-compartir"
             >
-                CÓDIGOS
-            </button>
 
-
-            <button
-                id="btnIA"
-                class="btn btn-herramienta"
-                type="button"
-            >
-                IA
-            </button>
-
-
-            <button
-                id="btnGuardar"
-                class="btn btn-guardar"
-                type="button"
-            >
-                GUARDAR
-            </button>
-
-        </div>
-
-
-        <!-- MENSAJE -->
-        <div
-            id="mensaje"
-            class="mensaje"
-        ></div>
-
-
-        <!-- CONFIGURACIÓN -->
-        <div
-            id="modalConfiguracion"
-            class="modal oculto"
-        >
-
-            <div class="modal-contenido">
-
-                <div class="modal-header">
-
-                    <h2>CONFIGURACIÓN</h2>
-
-
-                    <button
-                        id="btnCerrarConfiguracion"
-                        class="btn-cerrar"
-                        type="button"
-                    >
-                        ×
-                    </button>
-
-                </div>
-
-
-                <h3>Materias</h3>
-
-
-                <div
-                    id="listaMaterias"
-                    class="lista-materias"
-                ></div>
-
-
-                <div class="agregar-materia">
-
-                    <input
-                        type="text"
-                        id="nuevaMateria"
-                        placeholder="Nueva materia"
-                    >
-
-
-                    <button
-                        id="btnAgregarMateria"
-                        type="button"
-                    >
-                        ＋ AGREGAR
-                    </button>
-
-                </div>
+                <button
+                    id="btnWhatsApp"
+                    type="button"
+                >
+                    📱 MANDAR POR WHATSAPP
+                </button>
 
 
                 <button
-                    id="btnCerrarModal"
-                    class="btn-modal-cerrar"
+                    id="btnPDF"
                     type="button"
                 >
-                    CERRAR
+                    📄 EXPORTAR PDF
+                </button>
+
+
+                <button
+                    id="btnWord"
+                    type="button"
+                >
+                    📝 EXPORTAR WORD
+                </button>
+
+
+                <button
+                    id="btnImprimir"
+                    type="button"
+                >
+                    🖨 IMPRIMIR
                 </button>
 
             </div>
 
         </div>
 
+
+        <!-- CÓDIGOS -->
+
+        <button
+            id="btnTexto"
+            class="btn btn-herramienta"
+            type="button"
+        >
+            CÓDIGOS
+        </button>
+
+
+        <!-- IA -->
+
+        <button
+            id="btnIA"
+            class="btn btn-herramienta"
+            type="button"
+        >
+            IA
+        </button>
+
+
+        <!-- GUARDAR -->
+
+        <button
+            id="btnGuardar"
+            class="btn btn-guardar"
+            type="button"
+        >
+            GUARDAR
+        </button>
+
     </div>
 
 
-    <!-- =========================================
-         SUPABASE
-         ========================================= -->
+    <!-- MENSAJE -->
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-
-    <!-- =========================================
-         CONFIGURACIÓN DE MIS APUNTES
-         ========================================= -->
-
-    <script>
-
-        const SUPABASE_URL =
-            "https://rodaerqzebwzcawbpvps.supabase.co";
+    <div
+        id="mensaje"
+        class="mensaje"
+    ></div>
 
 
-        const SUPABASE_PUBLISHABLE_KEY =
-            "sb_publishable_OOZo2L1bV0Ble2DgvWxbglg_I5bD1ykO";
+    <!-- CONFIGURACIÓN -->
+
+    <div
+        id="modalConfiguracion"
+        class="modal oculto"
+    >
+
+        <div class="modal-contenido">
+
+            <div class="modal-header">
+
+                <h2>CONFIGURACIÓN</h2>
 
 
-        const supabaseClient =
-            window.supabase.createClient(
-                SUPABASE_URL,
-                SUPABASE_PUBLISHABLE_KEY
-            );
+                <button
+                    id="btnCerrarConfiguracion"
+                    class="btn-cerrar"
+                    type="button"
+                >
+                    ×
+                </button>
 
-    </script>
+            </div>
 
 
-    <!-- =========================================
-         PROGRAMA PRINCIPAL
-         ========================================= -->
+            <h3>Materias</h3>
 
-    <script src="script.js"></script>
+
+            <div
+                id="listaMaterias"
+                class="lista-materias"
+            ></div>
+
+
+            <div class="agregar-materia">
+
+                <input
+                    type="text"
+                    id="nuevaMateria"
+                    placeholder="Nueva materia"
+                >
+
+
+                <button
+                    id="btnAgregarMateria"
+                    type="button"
+                >
+                    ＋ AGREGAR
+                </button>
+
+            </div>
+
+
+            <button
+                id="btnCerrarModal"
+                class="btn-modal-cerrar"
+                type="button"
+            >
+                CERRAR
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================
+     SUPABASE
+     ========================================= -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
+<!-- =========================================
+     CONFIGURACIÓN DE MIS APUNTES
+     ========================================= -->
+
+<script>
+
+    const SUPABASE_URL =
+        "https://rodaerqzebwzcawbpvps.supabase.co";
+
+
+    const SUPABASE_PUBLISHABLE_KEY =
+        "sb_publishable_OOZo2L1bV0Ble2DgvWxbglg_I5bD1ykO";
+
+
+    const supabaseClient =
+        window.supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_PUBLISHABLE_KEY
+        );
+
+</script>
+
+
+<!-- =========================================
+     EXPORTACIÓN PDF
+     ========================================= -->
+
+<script
+    src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+></script>
+
+
+<!-- =========================================
+     PROGRAMA PRINCIPAL
+     ========================================= -->
+
+<script src="script.js"></script>
 
 </body>
 
